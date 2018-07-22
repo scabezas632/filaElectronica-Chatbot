@@ -911,8 +911,10 @@ function isDefined(obj) {
 
 // Comparar fechas
 function ofertaIsValidate(oferta) {
+    const desde = new Date(oferta['ofertaInicio']);
+    const hasta = new Date(oferta['ofertaFin']);
     const today = new Date();
-    if (today.getTime() > oferta['ofertaInicio'].getTime() && today.getTime() < oferta['ofertaFin'].getTime()) {
+    if (today.getTime() > desde.getTime() && today.getTime() < hasta.getTime()) {
         return true;
     } else {
         return false;
