@@ -185,45 +185,7 @@ function handleEcho(messageId, appId, metadata) {
 function handleApiAiAction(sender, action, responseText, contexts, parameters) {
     switch (action) {
         case "obtener-ofertas":
-            var request = require('request');
-            request({
-                url: 'https://filaelectronica-backend.herokuapp.com/oferta',
-                // qs: { Parametros que se entregan a API AI
-                //     from: 'blog example', 
-                //     time: +new Date() 
-                // }
-            }, function(err, resp, body) {
-                if (!err && resp.statusCode == 200) {
-                    let oferta = JSON.parse(body);
-                    if (oferta.hasOwnProperty('ofertas') && oferta.length > 0) {
-                        let reply = `${responseText}\n`
-                        let contador = 0;
-                        for (let i = 0; i < oferta.length; i++) {
-                            // Verificar validez de la oferta
-                            if (ofertaIsValidate(oferta.ofertas[i])) {
-                                let ahorro = oferta.ofertas[i]['producto']['precio'] - oferta.ofertas[i]['precioOferta'];
-                                reply = `${reply}` +
-                                    `*Producto: ${oferta.ofertas[i]['producto']['nombre']}*\n` +
-                                    `Precio Normal: $${oferta.ofertas[i]['producto']['precio']}\n` +
-                                    `Precio Oferta: $${oferta.ofertas[i]['precioOferta']}\n` +
-                                    `Ahorro: $${ahorro}\n\n`;
-
-                                // Aumentar contador de ofertas validas
-                                contador++;
-                            }
-                        }
-                        if (contador != 0) {
-                            sendTextMessage(sender, reply);
-                        } else {
-                            sendTextMessage(sender, `Disculpa pero no existen ofertas vigentes`)
-                        }
-                    } else {
-                        sendTextMessage(sender, `Disculpa pero no existen ofertas vigentes`)
-                    }
-                } else {
-                    console.error(err);
-                }
-            });
+            consultarOfertas(sender, responseText);
             break;
         default:
             // Acción no controlada, se envia mensaje por default
@@ -906,6 +868,51 @@ function isDefined(obj) {
     }
 
     return obj != null;
+}
+
+
+function consultarOfertas(sender, responseText) {
+    var request = require('request');
+    sendTextMessage(sender, 'Ok, dame un momento para consultar las ofertas...');
+    request({
+        url: 'https://filaelectronica-backend.herokuapp.com/oferta',
+        // qs: { Parametros que se entregan a API AI
+        //     from: 'blog example', 
+        //     time: +new Date() 
+        // }
+    }, function(err, resp, body) {
+        if (!err && resp.statusCode == 200) {
+            let oferta = JSON.parse(body);
+            if (oferta.hasOwnProperty('ofertas') && oferta.length > 0) {
+                let reply = `${responseText}\n`
+                let contador = 0;
+                for (let i = 0; i < oferta.length; i++) {
+                    // Verificar validez de la oferta
+                    if (ofertaIsValidate(oferta.ofertas[i])) {
+                        let ahorro = oferta.ofertas[i]['producto']['precio'] - oferta.ofertas[i]['precioOferta'];
+                        reply = `${reply}` +
+                            `*Producto: ${oferta.ofertas[i]['producto']['nombre']}*\n` +
+                            `Precio Normal: $${oferta.ofertas[i]['producto']['precio']}\n` +
+                            `Precio Oferta: $${oferta.ofertas[i]['precioOferta']}\n` +
+                            `Ahorro: $${ahorro}\n\n`;
+
+                        // Aumentar contador de ofertas validas
+                        contador++;
+                    }
+                }
+                if (contador != 0) {
+                    sendTextMessage(sender, reply);
+                } else {
+                    sendTextMessage(sender, 'Disculpa pero no existen ofertas vigentes');
+                }
+            } else {
+                sendTextMessage(sender, 'Disculpa pero no existen ofertas vigentes');
+            }
+        } else {
+            sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar las ofertas');
+            console.error(err);
+        }
+    });
 }
 
 
