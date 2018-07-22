@@ -203,10 +203,10 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
                     let reply = `${responseText}\n`
                     if (oferta.hasOwnProperty('ofertas') && oferta.length > 0) {
                         for (let i = 0; i < oferta.length; i++) {
-                            let ahorro = oferta[i]['producto']['precio'] - oferta[i]['precioOferta'];
+                            let ahorro = oferta.ofertas[i]['producto']['precio'] - oferta.ofertas[i]['precioOferta'];
                             reply = `${reply} 
-                                    Producto: ${oferta[i]['producto']['nombre']}\n
-                                    Precio Oferta: ${oferta[i]['precioOferta']}\n
+                                    Producto: ${oferta.ofertas[i]['producto']['nombre']}\n
+                                    Precio Oferta: ${oferta.ofertas[i]['precioOferta']}\n
                                     Ahorro: ${ahorro}\n\n`;
                         }
                         sendTextMessage(sender, reply);
