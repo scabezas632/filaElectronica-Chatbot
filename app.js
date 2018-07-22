@@ -201,7 +201,7 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
                 if (!err && resp.statusCode == 200) {
                     let oferta = JSON.parse(body);
                     let reply = `${responseText}\n`
-                    if (oferta.hasOwnProperty('0')) {
+                    if (oferta.hasOwnProperty('ofertas') && oferta.length > 0) {
                         for (let i = 0; i < oferta.length; i++) {
                             let ahorro = oferta[i]['producto']['precio'] - oferta[i]['precioOferta'];
                             reply = `${reply} 
