@@ -200,11 +200,18 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
             }, function(err, resp, body) {
                 if (!err && resp.statusCode == 200) {
                     let oferta = JSON.parse(body);
-                    if (oferta.hasOwnProperty('producto')) {
-                        let reply = `${responseText} ${oferta['producto'][0]['nombre']}`;
+                    let reply = `${responseText}\n`
+                    if (oferta.hasOwnProperty('0')) {
+                        for (let i = 0; i < oferta.length; i++) {
+                            let ahorro = oferta[i]['producto']['precio'] - oferta[i]['precioOferta'];
+                            reply = `${reply} 
+                                    Producto: ${oferta[i]['producto']['nombre']}\n
+                                    Precio Oferta: ${oferta[i]['precioOferta']}\n
+                                    Ahorro: ${ahorro}\n\n`;
+                        }
                         sendTextMessage(sender, reply);
                     } else {
-                        sendTextMessage(sender, `No existen ofertas vigentes`)
+                        sendTextMessage(sender, `Disculpa pero no existen ofertas vigentes`)
                     }
                 } else {
                     console.error(err);
