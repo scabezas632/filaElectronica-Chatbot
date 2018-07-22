@@ -195,22 +195,28 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
             }, function(err, resp, body) {
                 if (!err && resp.statusCode == 200) {
                     let oferta = JSON.parse(body);
-                    let reply = `${responseText}\n`
                     if (oferta.hasOwnProperty('ofertas') && oferta.length > 0) {
+                        let reply = `${responseText}\n`
+                        let contador = 0;
                         for (let i = 0; i < oferta.length; i++) {
                             // Verificar validez de la oferta
                             if (ofertaIsValidate(oferta.ofertas[i])) {
-                                if (oferta.ofertas[i]['producto']['precio']) {
-                                    let ahorro = oferta.ofertas[i]['producto']['precio'] - oferta.ofertas[i]['precioOferta'];
-                                    reply = `${reply}` +
-                                        `*Producto: ${oferta.ofertas[i]['producto']['nombre']}*\n` +
-                                        `Precio Normal: $${oferta.ofertas[i]['producto']['precio']}\n` +
-                                        `Precio Oferta: $${oferta.ofertas[i]['precioOferta']}\n` +
-                                        `Ahorro: $${ahorro}\n\n`;
-                                }
+                                let ahorro = oferta.ofertas[i]['producto']['precio'] - oferta.ofertas[i]['precioOferta'];
+                                reply = `${reply}` +
+                                    `*Producto: ${oferta.ofertas[i]['producto']['nombre']}*\n` +
+                                    `Precio Normal: $${oferta.ofertas[i]['producto']['precio']}\n` +
+                                    `Precio Oferta: $${oferta.ofertas[i]['precioOferta']}\n` +
+                                    `Ahorro: $${ahorro}\n\n`;
+
+                                // Aumentar contador de ofertas validas
+                                contador++;
                             }
                         }
-                        sendTextMessage(sender, reply);
+                        if (contador != 0) {
+                            sendTextMessage(sender, reply);
+                        } else {
+                            sendTextMessage(sender, `Disculpa pero no existen ofertas vigentes`)
+                        }
                     } else {
                         sendTextMessage(sender, `Disculpa pero no existen ofertas vigentes`)
                     }
@@ -906,7 +912,7 @@ function isDefined(obj) {
 // Comparar fechas
 function ofertaIsValidate(oferta) {
     const today = new Date();
-    if (today > oferta['ofertaInicio'] && today < oferta['ofertaFin']) {
+    if (today.getTime() > oferta['ofertaInicio'].getTime() && today.getTime() < oferta['ofertaFin'].getTime()) {
         return true;
     } else {
         return false;
