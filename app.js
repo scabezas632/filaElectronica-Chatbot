@@ -188,14 +188,9 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
             var request = require('request');
             request({
                 url: 'https://filaelectronica-backend.herokuapp.com/oferta',
-                // qs: { Parametros!!!
+                // qs: { Parametros que se entregan a API AI
                 //     from: 'blog example', 
                 //     time: +new Date() 
-                // },
-                // method: 'GET',
-                // headers: {
-                //     'Content-Type': 'MyContentType',
-                //     'Custom-Header': 'Custom Value'
                 // }
             }, function(err, resp, body) {
                 if (!err && resp.statusCode == 200) {
@@ -203,12 +198,17 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
                     let reply = `${responseText}\n`
                     if (oferta.hasOwnProperty('ofertas') && oferta.length > 0) {
                         for (let i = 0; i < oferta.length; i++) {
-                            let ahorro = oferta.ofertas[i]['producto']['precio'] - oferta.ofertas[i]['precioOferta'];
-                            reply = `${reply}` +
-                                `*Producto: ${oferta.ofertas[i]['producto']['nombre']}*\n` +
-                                `Precio Normal: ${oferta.ofertas[i]['producto']['precio']}\n` +
-                                `Precio Oferta: ${oferta.ofertas[i]['precioOferta']}\n` +
-                                `Ahorro: ${ahorro}\n\n`;
+                            // Verificar validez de la oferta
+                            if (ofertaIsValidate(oferta.ofertas[i])) {
+                                if (oferta.ofertas[i]['producto']['precio']) {
+                                    let ahorro = oferta.ofertas[i]['producto']['precio'] - oferta.ofertas[i]['precioOferta'];
+                                    reply = `${reply}` +
+                                        `*Producto: ${oferta.ofertas[i]['producto']['nombre']}*\n` +
+                                        `Precio Normal: $${oferta.ofertas[i]['producto']['precio']}\n` +
+                                        `Precio Oferta: $${oferta.ofertas[i]['precioOferta']}\n` +
+                                        `Ahorro: $${ahorro}\n\n`;
+                                }
+                            }
                         }
                         sendTextMessage(sender, reply);
                     } else {
@@ -900,6 +900,17 @@ function isDefined(obj) {
     }
 
     return obj != null;
+}
+
+
+// Comparar fechas
+function ofertaIsValidate(oferta) {
+    const today = new Date();
+    if (today > oferta['ofertaInicio'] && today < oferta['ofertaFin']) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 // Scan barcode from image
