@@ -198,7 +198,7 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
                 //     'Custom-Header': 'Custom Value'
                 // }
             }, function(err, resp, body) {
-                if (!err && rep.statusCode == 200) {
+                if (!err && resp.statusCode == 200) {
                     let oferta = JSON.parse(body);
                     if (oferta.hasOwnProperty('producto')) {
                         let reply = `${responseText} ${oferta['producto'][0]['nombre']}`;
