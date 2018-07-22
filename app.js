@@ -204,10 +204,11 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
                     if (oferta.hasOwnProperty('ofertas') && oferta.length > 0) {
                         for (let i = 0; i < oferta.length; i++) {
                             let ahorro = oferta.ofertas[i]['producto']['precio'] - oferta.ofertas[i]['precioOferta'];
-                            reply = `${reply} 
-                                    Producto: ${oferta.ofertas[i]['producto']['nombre']}\n
-                                    Precio Oferta: ${oferta.ofertas[i]['precioOferta']}\n
-                                    Ahorro: ${ahorro}\n\n`;
+                            reply = `${reply}` +
+                                `*Producto: ${oferta.ofertas[i]['producto']['nombre']}*\n` +
+                                `Precio Normal: ${oferta.ofertas[i]['producto']['precio']}\n` +
+                                `Precio Oferta: ${oferta.ofertas[i]['precioOferta']}\n` +
+                                `Ahorro: ${ahorro}\n\n`;
                         }
                         sendTextMessage(sender, reply);
                     } else {
