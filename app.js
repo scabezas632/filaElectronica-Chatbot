@@ -118,9 +118,6 @@ app.post('/webhook/', function(req, res) {
 });
 
 
-
-
-
 function receivedMessage(event) {
 
     var senderID = event.sender.id;
@@ -187,9 +184,9 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
         case "obtener-ofertas":
             consultarOfertas(sender, responseText);
             break;
-        case "obtener-horario":
+            // case "obtener-horario":
             // consultarHorario(sender, responseText, parameters);
-            break;
+            // break;
         default:
             // Acción no controlada, se envia mensaje por default 
             sendTextMessage(sender, responseText);
