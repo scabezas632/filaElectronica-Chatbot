@@ -883,22 +883,25 @@ function consultarHorario(sender, responseText, parameters) {
                 comuna: parameters['comuna']
             }
         }, function(err, resp, body) {
+            let reply;
             if (!err && resp.statusCode == 200) {
                 let sucursal = JSON.parse(body);
                 if (sucursal.hasOwnProperty('sucursales') && sucursal.length == 1) {
-                    let reply = `${responseText}\n` +
+                    reply = `${responseText}\n` +
                         `${sucursal.sucursales[0]['horario']['semana']}\n` +
                         `${sucursal.sucursales[0]['horario']['domingo']}`
+                    sendTextMessage(sender, reply);
                 } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
-                    sendTextMessage(sender, `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']},` +
-                        `¿Cuál es la sucursal que necesitas?`);
+                    reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']},` +
+                        `¿Cuál es la sucursal que necesitas?`;
                 } else {
-                    sendTextMessage(sender, `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`);
+                    reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`;
                 }
             } else {
-                sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
+                reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
                 console.error(err);
             }
+            sendTextMessage(sender, relpy);
         });
     } else {
         sendTextMessage(sender, responseText);
