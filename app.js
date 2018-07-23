@@ -191,7 +191,7 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
             // consultarHorario(sender, responseText, parameters);
             break;
         default:
-            // Acción no controlada, se envia mensaje por default
+            // Acción no controlada, se envia mensaje por default 
             sendTextMessage(sender, responseText);
     }
 }
