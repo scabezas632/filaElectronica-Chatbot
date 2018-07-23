@@ -901,7 +901,7 @@ function consultarHorario(sender, responseText, parameters) {
                 reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
                 console.error(err);
             }
-            sendTextMessage(sender, relpy);
+            sendTextMessage(sender, reply);
         });
     } else {
         sendTextMessage(sender, responseText);
