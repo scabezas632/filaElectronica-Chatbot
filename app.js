@@ -187,7 +187,7 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
         case "obtener-ofertas":
             consultarOfertas(sender, responseText);
             break;
-        case "pedir-horario":
+        case "obtener-horario":
             consultarHorario(sender, responseText, parameters);
             break;
         default:
@@ -892,8 +892,7 @@ function consultarHorario(sender, responseText, parameters) {
                     let reply = `${responseText}\n` +
                         `${sucursal.sucursales[0]['horario']['semana']}\n` +
                         `${sucursal.sucursales[0]['horario']['domingo']}`
-                }
-                if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
+                } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
                     sendTextMessage(sender, `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']},` +
                         `¿Cuál es la sucursal que necesitas?`);
                 } else {
