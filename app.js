@@ -188,7 +188,7 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
             consultarOfertas(sender, responseText);
             break;
         case "obtener-horario":
-            consultarHorario(sender, responseText, parameters);
+            // consultarHorario(sender, responseText, parameters);
             break;
         default:
             // Acción no controlada, se envia mensaje por default
@@ -876,37 +876,37 @@ function isDefined(obj) {
 //========================================
 // HORARIO 
 //========================================
-function consultarHorario(sender, responseText, parameters) {
-    if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
-        var request = require('request');
-        sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
-        request({
-            url: 'https://filaelectronica-backend.herokuapp.com/sucursal',
-            qs: {
-                comuna: parameters['comuna']
-            }
-        }, function(err, resp, body) {
-            if (!err && resp.statusCode == 200) {
-                let sucursal = JSON.parse(body);
-                if (sucursal.hasOwnProperty('sucursales') && sucursal.length == 1) {
-                    let reply = `${responseText}\n` +
-                        `${sucursal.sucursales[0]['horario']['semana']}\n` +
-                        `${sucursal.sucursales[0]['horario']['domingo']}`
-                } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
-                    sendTextMessage(sender, `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']},` +
-                        `¿Cuál es la sucursal que necesitas?`);
-                } else {
-                    sendTextMessage(sender, `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`);
-                }
-            } else {
-                sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
-                console.error(err);
-            }
-        });
-    } else {
-        sendTextMessage(sender, responseText);
-    }
-}
+// function consultarHorario(sender, responseText, parameters) {
+//     if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
+//         var request = require('request');
+//         sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
+//         request({
+//             url: 'https://filaelectronica-backend.herokuapp.com/sucursal',
+//             qs: {
+//                 comuna: parameters['comuna']
+//             }
+//         }, function(err, resp, body) {
+//             if (!err && resp.statusCode == 200) {
+//                 let sucursal = JSON.parse(body);
+//                 if (sucursal.hasOwnProperty('sucursales') && sucursal.length == 1) {
+//                     let reply = `${responseText}\n` +
+//                         `${sucursal.sucursales[0]['horario']['semana']}\n` +
+//                         `${sucursal.sucursales[0]['horario']['domingo']}`
+//                 } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
+//                     sendTextMessage(sender, `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']},` +
+//                         `¿Cuál es la sucursal que necesitas?`);
+//                 } else {
+//                     sendTextMessage(sender, `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`);
+//                 }
+//             } else {
+//                 sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
+//                 console.error(err);
+//             }
+//         });
+//     } else {
+//         sendTextMessage(sender, responseText);
+//     }
+// }
 
 
 //========================================
