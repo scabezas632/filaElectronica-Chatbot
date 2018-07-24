@@ -325,6 +325,8 @@ function handleCardMessages(messages, sender) {
 
 function handleMessageAttachments(messageAttachments, senderID) {
     // Por ahora, solo responde
+    console.log("ARCHIVO RECIBIDO");
+    console.log(messageAttachments);
     send.sendTextMessage(senderID, "Archivo recibido. Procesando...");
     // var barcode = getBarcodeFromImage(messageAttachments.payload.url);
     // send.sendTextMessage(senderID, "Buscando información de " + barcode);
