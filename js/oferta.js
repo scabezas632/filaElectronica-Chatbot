@@ -2,9 +2,12 @@
 // OFERTAS 
 //========================================
 
+const request = require('request');
+const send = require('./js/send');
+
+
 function consultarOfertas(sender, responseText) {
-    var request = require('request');
-    sendTextMessage(sender, 'Ok, dame un momento para consultar las ofertas...');
+    send.sendTextMessage(sender, 'Ok, dame un momento para consultar las ofertas...');
     request({
         url: 'https://filaelectronica-backend.herokuapp.com/oferta',
         // qs: { Parametros que se entregan a API AI
@@ -32,15 +35,15 @@ function consultarOfertas(sender, responseText) {
                     }
                 }
                 if (contador != 0) {
-                    sendTextMessage(sender, reply);
+                    send.sendTextMessage(sender, reply);
                 } else {
-                    sendTextMessage(sender, 'Disculpa pero no existen ofertas vigentes');
+                    send.sendTextMessage(sender, 'Disculpa pero no existen ofertas vigentes');
                 }
             } else {
-                sendTextMessage(sender, 'Disculpa pero no existen ofertas vigentes');
+                send.sendTextMessage(sender, 'Disculpa pero no existen ofertas vigentes');
             }
         } else {
-            sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar las ofertas');
+            send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar las ofertas');
             console.error(err);
         }
     });

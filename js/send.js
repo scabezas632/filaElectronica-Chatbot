@@ -6,8 +6,8 @@ const config = require('../config/config');
 const express = require('express');
 
 // Necesarios para la conversacion
-const oferta = require('./horario');
-const send = require('./oferta');
+const horario = require('./horario');
+const oferta = require('./oferta');
 
 
 const apiAiService = apiai(config.API_AI_CLIENT_ACCESS_TOKEN, {
@@ -439,7 +439,7 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
             oferta.consultarOfertas(sender, responseText);
             break;
         case "obtener-horario":
-            consultarHorario(sender, responseText, parameters);
+            horario.consultarHorario(sender, responseText, parameters);
             break;
         default:
             // Acción no controlada, se envia mensaje por default 
