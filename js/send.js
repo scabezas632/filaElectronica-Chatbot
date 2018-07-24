@@ -1,6 +1,4 @@
-var exports = module.exports = {};
-
-exports.sendToApiAi = function(sender, text) {
+function sendToApiAi(sender, text) {
 
     sendTypingOn(sender);
     let apiaiRequest = apiAiService.textRequest(text, {
@@ -20,7 +18,7 @@ exports.sendToApiAi = function(sender, text) {
 
 
 
-exports.sendTextMessage = function(recipientId, text) {
+function sendTextMessage(recipientId, text) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -36,7 +34,7 @@ exports.sendTextMessage = function(recipientId, text) {
  * Envia una imagen utilizando el Send API.
  *
  */
-exports.sendImageMessage = function(recipientId, imageUrl) {
+function sendImageMessage(recipientId, imageUrl) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -58,7 +56,7 @@ exports.sendImageMessage = function(recipientId, imageUrl) {
  * Envia un GIF utilizando el Send API.
  *
  */
-exports.sendGifMessage = function(recipientId) {
+function sendGifMessage(recipientId) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -80,7 +78,7 @@ exports.sendGifMessage = function(recipientId) {
  * Envia un audio utilizando el Send API.
  *
  */
-exports.sendAudioMessage = function(recipientId) {
+function sendAudioMessage(recipientId) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -102,7 +100,7 @@ exports.sendAudioMessage = function(recipientId) {
  * Envia un video utilizando un Send API.
  * example videoName: "/assets/allofus480.mov"
  */
-exports.sendVideoMessage = function(recipientId, videoName) {
+function sendVideoMessage(recipientId, videoName) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -124,7 +122,7 @@ exports.sendVideoMessage = function(recipientId, videoName) {
  * Envia un video utilizando el Send API.
  * example fileName: fileName"/assets/test.txt"
  */
-exports.sendFileMessage = function(recipientId, fileName) {
+function sendFileMessage(recipientId, fileName) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -148,7 +146,7 @@ exports.sendFileMessage = function(recipientId, fileName) {
  * Envia un Button Message utilizando el Send API.
  *
  */
-exports.sendButtonMessage = function(recipientId, text, buttons) {
+function sendButtonMessage(recipientId, text, buttons) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -169,7 +167,7 @@ exports.sendButtonMessage = function(recipientId, text, buttons) {
 }
 
 
-exports.sendGenericMessage = function(recipientId, elements) {
+function sendGenericMessage(recipientId, elements) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -189,7 +187,7 @@ exports.sendGenericMessage = function(recipientId, elements) {
 }
 
 
-exports.sendReceiptMessage = function(recipientId, recipient_name, currency, payment_method,
+function sendReceiptMessage(recipientId, recipient_name, currency, payment_method,
     timestamp, elements, address, summary, adjustments) {
     // Generate a random receipt ID as the API requires a unique ID
     var receiptId = "order" + Math.floor(Math.random() * 1000);
@@ -224,7 +222,7 @@ exports.sendReceiptMessage = function(recipientId, recipient_name, currency, pay
  * Envia un mensaje con Quick Reply buttons.
  *
  */
-exports.sendQuickReply = function(recipientId, text, replies, metadata) {
+function sendQuickReply(recipientId, text, replies, metadata) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -243,7 +241,7 @@ exports.sendQuickReply = function(recipientId, text, replies, metadata) {
  * Se le envia al usuario el "Visto"
  *
  */
-exports.sendReadReceipt = function(recipientId) {
+function sendReadReceipt(recipientId) {
 
     var messageData = {
         recipient: {
@@ -259,7 +257,7 @@ exports.sendReadReceipt = function(recipientId) {
  * Se prende indicador de "Esta escribiendo..."
  *
  */
-exports.sendTypingOn = function(recipientId) {
+function sendTypingOn(recipientId) {
 
 
     var messageData = {
@@ -276,7 +274,7 @@ exports.sendTypingOn = function(recipientId) {
  * Se apaga indicador de "Esta escribiendo..."
  *
  */
-exports.sendTypingOff = function(recipientId) {
+function sendTypingOff(recipientId) {
 
 
     var messageData = {
@@ -295,7 +293,7 @@ exports.sendTypingOff = function(recipientId) {
  * Send a message with the account linking call-to-action
  *
  */
-exports.sendAccountLinking = function(recipientId) {
+function sendAccountLinking(recipientId) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -323,7 +321,7 @@ exports.sendAccountLinking = function(recipientId) {
  * get the message id in a response 
  *
  */
-exports.callSendAPI = function(messageData) {
+function callSendAPI(messageData) {
     request({
         uri: 'https://graph.facebook.com/v2.6/me/messages',
         qs: {
@@ -348,4 +346,23 @@ exports.callSendAPI = function(messageData) {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
     });
+}
+
+module.exports = {
+    sendToApiAi,
+    sendTextMessage,
+    sendImageMessage,
+    sendGifMessage,
+    sendAudioMessage,
+    sendVideoMessage,
+    sendFileMessage,
+    sendButtonMessage,
+    sendGenericMessage,
+    sendReceiptMessage,
+    sendQuickReply,
+    sendReadReceipt,
+    sendTypingOn,
+    sendTypingOff,
+    sendAccountLinking,
+    callSendAPI
 }

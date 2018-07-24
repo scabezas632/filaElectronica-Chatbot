@@ -2,9 +2,7 @@
 // OFERTAS 
 //========================================
 
-var exports = module.exports = {};
-
-exports.consultarOfertas = function(sender, responseText) {
+function consultarOfertas(sender, responseText) {
     var request = require('request');
     sendTextMessage(sender, 'Ok, dame un momento para consultar las ofertas...');
     request({
@@ -58,4 +56,8 @@ function ofertaIsValidate(oferta) {
     } else {
         return false;
     }
+}
+
+module.exports = {
+    consultarOfertas
 }
