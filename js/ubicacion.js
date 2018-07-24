@@ -31,6 +31,7 @@ function obtenerComuna(sender, location) {
             contador++;
         }
     });
+    console.log("COMUNA:", comuna)
     return comuna;
 }
 
