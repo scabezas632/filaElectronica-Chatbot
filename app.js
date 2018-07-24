@@ -10,6 +10,8 @@ const request = require('request');
 const app = express();
 const uuid = require('uuid');
 const send = require('./js/send');
+const horario = require('./js/horario');
+const oferta = require('./js/oferta');
 
 
 // Parametros para Messenger API
