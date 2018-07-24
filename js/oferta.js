@@ -3,7 +3,7 @@
 //========================================
 
 const request = require('request');
-const send = require('./send');
+const send = require('/send');
 
 
 function consultarOfertas(sender, responseText) {
