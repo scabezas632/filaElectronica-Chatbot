@@ -175,7 +175,12 @@ function receivedMessage(event) {
         // Enviar mensaje a API AI
         sendToApiAi(senderID, messageText, sessionIds);
     } else if (messageAttachments) {
-        handleMessageAttachments(messageAttachments, senderID);
+        if (messageAttachments[0]['type'] === 'location') {
+            const comuna = ubicacion.obtenerComuna(senderID, messageAttachments[0]['payload']['coordinates']);
+            sendToApiAi(senderID, comuna, sessionIds);
+        } else {
+            handleMessageAttachments(messageAttachments, senderID);
+        }
     }
 }
 
@@ -327,9 +332,6 @@ function handleCardMessages(messages, sender) {
 
 function handleMessageAttachments(messageAttachments, senderID) {
     // Por ahora, solo responde
-    if (messageAttachments[0]['type'] === 'location') {
-        ubicacion.obtenerComuna(senderID, messageAttachments[0]['payload']['coordinates'])
-    }
     // send.sendTextMessage(senderID, "Archivo recibido. Procesando...");
     // var barcode = getBarcodeFromImage(messageAttachments.payload.url);
     // send.sendTextMessage(senderID, "Buscando información de " + barcode);

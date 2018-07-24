@@ -19,8 +19,8 @@ function obtenerComuna(sender, location) {
             send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
             console.error(err);
         }
-        console.log("BODY!!!")
-        console.log(body);
+        let comuna = JSON.parse(body);
+        return comuna['results']['address_components'][2]['long_name'];
     });
 }
 
