@@ -37,6 +37,7 @@ function consultarHorario(sender, responseText, parameters) {
                         quickReplyContent.payload = sucursal.sucursales[0]['nombre'];
                         quickReplies.push(quickReplyContent);
                     }
+                    console.log(quickReplies);
                 } else {
                     reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`;
                 }
@@ -45,8 +46,10 @@ function consultarHorario(sender, responseText, parameters) {
                 console.error(err);
             }
             if (quickReplies.length == 0) {
+                console.log("NO PASOOOOOOO");
                 send.sendTextMessage(sender, reply);
             } else {
+                console.log("PASOOOOOOOOOOO");
                 send.sendQuickReply(sender, reply, quickReplies);
             }
         });
