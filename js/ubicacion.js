@@ -7,6 +7,7 @@ const send = require('./send');
 function obtenerComuna(sender, location) {
     const lat = location.lat;
     const long = location.long;
+    let comuna;
     request({
         method: 'GET',
         url: 'https://maps.googleapis.com/maps/api/geocode/json',
@@ -19,7 +20,7 @@ function obtenerComuna(sender, location) {
             send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
             console.error(err);
         }
-        let comuna = JSON.parse(body);
+        comuna = JSON.parse(body);
         let termino = false;
         let contador = 0;
         while (!termino) {
@@ -29,9 +30,8 @@ function obtenerComuna(sender, location) {
             }
             contador++;
         }
-        console.log("COMUNA:", comuna)
-        return comuna;
     });
+    return comuna;
 }
 
 module.exports = {
