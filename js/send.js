@@ -381,7 +381,7 @@ function handleApiAiResponse(sender, response) {
     let contexts = response.result.contexts;
     let parameters = response.result.parameters;
 
-    send.sendTypingOff(sender);
+    sendTypingOff(sender);
 
     if (isDefined(messages) && (messages.length == 1 && messages[0].type != 0 || messages.length > 1)) {
         let timeoutInterval = 1100;
@@ -391,7 +391,6 @@ function handleApiAiResponse(sender, response) {
         for (var i = 0; i < messages.length; i++) {
 
             if (previousType == 1 && (messages[i].type != 1 || i == messages.length - 1)) {
-
                 timeout = (i - 1) * timeoutInterval;
                 setTimeout(handleCardMessages.bind(null, cardTypes, sender), timeout);
                 cardTypes = [];
@@ -415,19 +414,18 @@ function handleApiAiResponse(sender, response) {
     } else if (responseText == '' && !isDefined(action)) {
         //API AI no puede evaluar el input
         console.log('Pregunta desconocida: ' + response.result.resolvedQuery);
-        send.sendTextMessage(sender, "No estoy seguro de lo que me dices. ¿Puedes ser más especifico?");
+        sendTextMessage(sender, "No estoy seguro de lo que me dices. ¿Puedes ser más especifico?");
     } else if (isDefined(action)) {
         handleApiAiAction(sender, action, responseText, contexts, parameters);
     } else if (isDefined(responseData) && isDefined(responseData.facebook)) {
         try {
             console.log('Respuesta como formato de mensaje: ' + responseData.facebook);
-            send.sendTextMessage(sender, responseData.facebook);
+            sendTextMessage(sender, responseData.facebook);
         } catch (err) {
-            send.sendTextMessage(sender, err.message);
+            sendTextMessage(sender, err.message);
         }
     } else if (isDefined(responseText)) {
-
-        send.sendTextMessage(sender, responseText);
+        sendTextMessage(sender, responseText);
     }
 }
 
