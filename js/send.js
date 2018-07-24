@@ -1,3 +1,11 @@
+'use strict';
+
+const request = require('request');
+const apiai = require('apiai');
+const config = require('./config/config');
+const express = require('express');
+
+
 function sendToApiAi(sender, text) {
 
     sendTypingOn(sender);
