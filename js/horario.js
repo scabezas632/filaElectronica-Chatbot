@@ -32,11 +32,11 @@ function consultarHorario(sender, responseText, parameters) {
                     reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']},` +
                         `¿Cuál es la sucursal que necesitas?`;
                     // Llenar Quick Reply
-                    for (let i = 0; i < sucursal.length; i++) {
-                        quickReplyContent.title = sucursal.sucursales[0]['nombre'];
-                        quickReplyContent.payload = sucursal.sucursales[0]['nombre'];
-                        quickReplies.push(quickReplyContent);
-                    }
+                    // for (let i = 0; i < sucursal.length; i++) {
+                    //     quickReplyContent.title = sucursal.sucursales[i]['nombre'];
+                    //     quickReplyContent.payload = sucursal.sucursales[i]['nombre'];
+                    //     quickReplies.push(quickReplyContent);
+                    // }
                     console.log(quickReplies);
                 } else {
                     reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`;
@@ -45,15 +45,21 @@ function consultarHorario(sender, responseText, parameters) {
                 reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
                 console.error(err);
             }
+
+            // Comprobar si se envían quickReplys
             if (quickReplies.length == 0) {
-                console.log("NO PASOOOOOOO");
                 send.sendTextMessage(sender, reply);
             } else {
-                console.log("PASOOOOOOOOOOO");
-                send.sendQuickReply(sender, reply, quickReplies);
+                let replies = [{
+                    "content-type": "text",
+                    "title": "hola",
+                    "payload": "hola"
+                }];
+                send.sendQuickReply(sender, reply, replies);
             }
         });
     } else {
+        // Cuando el usuario no manda todos los parametros necesarios
         send.sendTextMessage(sender, responseText);
     }
 }
