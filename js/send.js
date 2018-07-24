@@ -6,7 +6,12 @@ const config = require('../config/config');
 const express = require('express');
 
 
-function sendToApiAi(sender, text) {
+const apiAiService = apiai(config.API_AI_CLIENT_ACCESS_TOKEN, {
+    language: "en",
+    requestSource: "fb"
+});
+
+function sendToApiAi(sender, text, sessionIds) {
 
     sendTypingOn(sender);
     let apiaiRequest = apiAiService.textRequest(text, {

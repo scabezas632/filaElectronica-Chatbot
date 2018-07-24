@@ -53,12 +53,6 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json())
 
 
-
-
-const apiAiService = apiai(config.API_AI_CLIENT_ACCESS_TOKEN, {
-    language: "en",
-    requestSource: "fb"
-});
 const sessionIds = new Map();
 
 // Index route
@@ -157,7 +151,7 @@ function receivedMessage(event) {
 
     if (messageText) {
         // Enviar mensaje a API AI
-        send.sendToApiAi(senderID, messageText);
+        send.sendToApiAi(senderID, messageText, sessionIds);
     } else if (messageAttachments) {
         handleMessageAttachments(messageAttachments, senderID);
     }
@@ -175,7 +169,7 @@ function handleQuickReply(senderID, quickReply, messageId) {
     var quickReplyPayload = quickReply.payload;
     console.log("Quick reply para el mensaje %s con payload %s", messageId, quickReplyPayload);
     // Se envia el payload a API AI
-    send.sendToApiAi(senderID, quickReplyPayload);
+    send.sendToApiAi(senderID, quickReplyPayload, sessionIds);
 }
 
 //https://developers.facebook.com/docs/messenger-platform/webhook-reference/message-echo
