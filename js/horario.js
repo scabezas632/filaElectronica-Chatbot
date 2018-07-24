@@ -20,6 +20,8 @@ function consultarHorario(sender, responseText, parameters) {
             }
         }, function(err, resp, body) {
             let reply;
+            let quickReplies = []
+
             if (!err && resp.statusCode == 200) {
                 let sucursal = JSON.parse(body);
                 if (sucursal.hasOwnProperty('sucursales') && sucursal.length == 1) {
@@ -29,8 +31,7 @@ function consultarHorario(sender, responseText, parameters) {
                 } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
                     reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']},` +
                         `¿Cuál es la sucursal que necesitas?`;
-                    // Quick Reply
-                    let quickReplies = []
+                    // Llenar Quick Reply
                     for (let i = 0; i < sucursal.length; i++) {
                         quickReplyContent.title = sucursal.sucursales[0]['nombre'];
                         quickReplyContent.payload = sucursal.sucursales[0]['nombre'];
@@ -43,7 +44,7 @@ function consultarHorario(sender, responseText, parameters) {
                 reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
                 console.error(err);
             }
-            if (!quickReplies) {
+            if (quickReplies.length == 0) {
                 send.sendTextMessage(sender, reply);
             } else {
                 send.sendQuickReply(sender, reply, quickReplies);
