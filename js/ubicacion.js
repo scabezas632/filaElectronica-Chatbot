@@ -5,12 +5,13 @@ const config = require('../config/config');
 const send = require('./send');
 
 function obtenerComuna(sender, location) {
-    console.log(location);
+    const lat = location.lat;
+    const long = location.long;
     request({
         method: 'GET',
         url: 'https://maps.googleapis.com/maps/api/geocode/json',
         qs: {
-            latlng: '28.385233, -81.563874',
+            latlng: lat + ', ' + long,
             key: config.GMAPS_API_TOKEN
         }
     }, function(err, response, body) {
@@ -18,6 +19,7 @@ function obtenerComuna(sender, location) {
             send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
             console.error(err);
         }
+        console.log("BODY!!!")
         console.log(body);
     });
 }

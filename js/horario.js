@@ -3,7 +3,6 @@
 //========================================
 const request = require('request');
 const send = require('./send');
-const ubicacion = require('./ubicacion');
 
 let quickReplyContent = {
     "content_type": "",

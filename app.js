@@ -12,6 +12,8 @@ const uuid = require('uuid');
 const send = require('./js/send');
 const horario = require('./js/horario');
 const oferta = require('./js/oferta');
+const ubicacion = require('./js/ubicacion');
+
 
 
 // Parametros para Messenger API
@@ -325,9 +327,10 @@ function handleCardMessages(messages, sender) {
 
 function handleMessageAttachments(messageAttachments, senderID) {
     // Por ahora, solo responde
-    console.log("ARCHIVO RECIBIDO");
-    console.log(messageAttachments);
-    send.sendTextMessage(senderID, "Archivo recibido. Procesando...");
+    if (messageAttachments[0]['type'] === 'location') {
+        ubicacion.obtenerComuna(senderID, messageAttachments[0]['payload']['coordinates'])
+    }
+    // send.sendTextMessage(senderID, "Archivo recibido. Procesando...");
     // var barcode = getBarcodeFromImage(messageAttachments.payload.url);
     // send.sendTextMessage(senderID, "Buscando información de " + barcode);
 }
