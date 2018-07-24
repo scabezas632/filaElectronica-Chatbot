@@ -10,11 +10,6 @@ const request = require('request');
 const app = express();
 const uuid = require('uuid');
 
-// Necesarios para la conversacion
-const oferta = require('./js/oferta');
-const send = require('./js/send');
-
-
 // Parametros para Messenger API
 if (!config.FB_PAGE_TOKEN) {
     throw new Error('FB_PAGE_TOKEN no esta configurado');
@@ -177,95 +172,6 @@ function handleEcho(messageId, appId, metadata) {
     // Just logging message echoes to console
     console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
 }
-
-function handleApiAiAction(sender, action, responseText, contexts, parameters) {
-    switch (action) {
-        case "obtener-ofertas":
-            oferta.consultarOfertas(sender, responseText);
-            break;
-        case "obtener-horario":
-            consultarHorario(sender, responseText, parameters);
-            break;
-        default:
-            // Acción no controlada, se envia mensaje por default 
-            send.sendTextMessage(sender, responseText);
-    }
-}
-
-function handleMessage(message, sender) {
-    switch (message.type) {
-        case 0: //texto
-            send.sendTextMessage(sender, message.speech);
-            break;
-        case 2: //quick replies
-            let replies = [];
-            for (var b = 0; b < message.replies.length; b++) {
-                let reply = {
-                    "content_type": "text",
-                    "title": message.replies[b],
-                    "payload": message.replies[b]
-                }
-                replies.push(reply);
-            }
-            send.sendQuickReply(sender, message.title, replies);
-            break;
-        case 3: //imagen
-            send.sendImageMessage(sender, message.imageUrl);
-            break;
-        case 4:
-            // custom payload
-            var messageData = {
-                recipient: {
-                    id: sender
-                },
-                message: message.payload.facebook
-
-            };
-
-            send.callSendAPI(messageData);
-
-            break;
-    }
-}
-
-
-function handleCardMessages(messages, sender) {
-
-    let elements = [];
-    for (var m = 0; m < messages.length; m++) {
-        let message = messages[m];
-        let buttons = [];
-        for (var b = 0; b < message.buttons.length; b++) {
-            let isLink = (message.buttons[b].postback.substring(0, 4) === 'http');
-            let button;
-            if (isLink) {
-                button = {
-                    "type": "web_url",
-                    "title": message.buttons[b].text,
-                    "url": message.buttons[b].postback
-                }
-            } else {
-                button = {
-                    "type": "postback",
-                    "title": message.buttons[b].text,
-                    "payload": message.buttons[b].postback
-                }
-            }
-            buttons.push(button);
-        }
-
-
-        let element = {
-            "title": message.title,
-            "image_url": message.imageUrl,
-            "subtitle": message.subtitle,
-            "buttons": buttons
-        };
-        elements.push(element);
-    }
-    send.sendGenericMessage(sender, elements);
-}
-
 
 function greetUserText(userId) {
     // Se obtiene la información del usuario para saludar
