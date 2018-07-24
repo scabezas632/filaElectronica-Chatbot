@@ -5,7 +5,7 @@ const request = require('request');
 const send = require('./send');
 
 let quickReplyContent = {
-    "content-type": "text",
+    "content_type": "text",
     "title": "",
     "payload": ""
 }
@@ -49,12 +49,7 @@ function consultarHorario(sender, responseText, parameters) {
             if (quickReplies.length == 0) {
                 send.sendTextMessage(sender, reply);
             } else {
-                let replies = [{
-                    "content-type": "text",
-                    "title": "hola",
-                    "payload": "hola"
-                }];
-                send.sendQuickReply(sender, reply, replies);
+                send.sendQuickReply(sender, reply, quickReplies);
             }
         });
     } else {
