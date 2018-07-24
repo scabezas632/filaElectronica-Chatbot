@@ -32,12 +32,11 @@ function consultarHorario(sender, responseText, parameters) {
                     reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']},` +
                         `¿Cuál es la sucursal que necesitas?`;
                     // Llenar Quick Reply
-                    // for (let i = 0; i < sucursal.length; i++) {
-                    //     quickReplyContent.title = sucursal.sucursales[i]['nombre'];
-                    //     quickReplyContent.payload = sucursal.sucursales[i]['nombre'];
-                    //     quickReplies.push(quickReplyContent);
-                    // }
-                    console.log(quickReplies);
+                    for (let i = 0; i < sucursal.length; i++) {
+                        quickReplyContent.title = sucursal.sucursales[i]['nombre'];
+                        quickReplyContent.payload = sucursal.sucursales[i]['nombre'];
+                        quickReplies.push(quickReplyContent);
+                    }
                 } else {
                     reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`;
                 }
