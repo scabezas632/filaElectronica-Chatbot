@@ -55,7 +55,7 @@ function consultarHorario(sender, responseText, parameters) {
         });
     } else {
         // Cuando el usuario no manda todos los parametros necesarios
-        quickReplyContentLocation = [{
+        const quickReplyContentLocation = [{
             "content_type": "location"
         }];
         send.sendQuickReply(sender, responseText, quickReplyContentLocation);
