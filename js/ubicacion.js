@@ -20,7 +20,15 @@ function obtenerComuna(sender, location) {
             console.error(err);
         }
         let comuna = JSON.parse(body);
-        return comuna['results']['address_components'][2]['long_name'];
+        let termino = false;
+        let contador = 0;
+        while (!termino) {
+            if (['results'][0]['address_components'][contador]['types'][0] === 'administrative_area_level_3') {
+                comuna = ['results'][0]['address_components'][contador]['long_name'];
+                termino = true;
+            }
+        }
+        return comuna;
     });
 }
 
