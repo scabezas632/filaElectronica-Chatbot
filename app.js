@@ -278,7 +278,7 @@ function handleMessage(message, sender) {
 
             };
 
-            send.callSendAPI(messageData);
+            callSendAPI(messageData);
 
             break;
     }

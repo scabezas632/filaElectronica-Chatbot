@@ -2,7 +2,7 @@
 // HORARIO 
 //========================================
 const request = require('request');
-const send = require('/send');
+const send = require('./send');
 
 function consultarHorario(sender, responseText, parameters) {
     if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
