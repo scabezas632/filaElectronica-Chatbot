@@ -26,12 +26,12 @@ function obtenerComuna(sender, location) {
                 contador++;
             }
             console.log("COMUNA1:", comuna);
-            return comuna;
         })
         .catch(err => {
             send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
             console.error(err);
         });
+    return comuna;
     // request({
     //     method: 'GET',
     //     url: 'https://maps.googleapis.com/maps/api/geocode/json',
