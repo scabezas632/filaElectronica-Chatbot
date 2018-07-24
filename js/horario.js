@@ -58,7 +58,7 @@ function consultarHorario(sender, responseText, parameters) {
         quickReplyContentLocation = [{
             "content_type": "location"
         }];
-        send.sendQuickReply(sender, reply, quickReplyContentLocation);
+        send.sendQuickReply(sender, responseText, quickReplyContentLocation);
         // send.sendTextMessage(sender, responseText);
     }
 }
