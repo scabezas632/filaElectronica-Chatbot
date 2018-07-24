@@ -9,6 +9,8 @@ const bodyParser = require('body-parser');
 const request = require('request');
 const app = express();
 const uuid = require('uuid');
+const send = require('./js/send');
+
 
 // Parametros para Messenger API
 if (!config.FB_PAGE_TOKEN) {
