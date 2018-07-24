@@ -1,14 +1,7 @@
 'use strict';
 
 const request = require('request');
-const apiai = require('apiai');
 const config = require('../config/config');
-const express = require('express');
-
-// Necesarios para la conversacion
-const horario = require('./horario');
-const oferta = require('./oferta');
-
 
 module.exports = {
     sendTextMessage: function(recipientId, text) {
