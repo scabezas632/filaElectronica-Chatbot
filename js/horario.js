@@ -4,6 +4,12 @@
 const request = require('request');
 const send = require('./send');
 
+let quickReplyContent = {
+    "content-type": "text",
+    "title": "",
+    "payload": ""
+}
+
 function consultarHorario(sender, responseText, parameters) {
     if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
         send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
@@ -23,6 +29,13 @@ function consultarHorario(sender, responseText, parameters) {
                 } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
                     reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']},` +
                         `¿Cuál es la sucursal que necesitas?`;
+                    // Quick Reply
+                    let quickReplies = []
+                    for (let i = 0; i < sucursal.length; i++) {
+                        quickReplyContent.title = sucursal.sucursales[0]['nombre'];
+                        quickReplyContent.payload = sucursal.sucursales[0]['nombre'];
+                        quickReplies.push(quickReplyContent);
+                    }
                 } else {
                     reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`;
                 }
@@ -30,7 +43,11 @@ function consultarHorario(sender, responseText, parameters) {
                 reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
                 console.error(err);
             }
-            send.sendTextMessage(sender, reply);
+            if (!quickReplies) {
+                send.sendTextMessage(sender, reply);
+            } else {
+                send.sendQuickReply(sender, reply, quickReplies);
+            }
         });
     } else {
         send.sendTextMessage(sender, responseText);
