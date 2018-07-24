@@ -34,8 +34,8 @@ function consultarHorario(sender, responseText, parameters) {
                     // Llenar Quick Reply
                     for (let i = 0; i < sucursal.length; i++) {
                         quickReplyContent.content_type = "text";
-                        quickReplyContent.title = `El horario de ${sucursal.sucursales[i]['nombre']}`;
-                        quickReplyContent.payload = sucursal.sucursales[i]['nombre'];
+                        quickReplyContent.title = sucursal.sucursales[i]['nombre'];
+                        quickReplyContent.payload = `El horario de ${sucursal.sucursales[i]['nombre']}`;
                         quickReplies.push(quickReplyContent);
                     }
                 } else {
