@@ -35,7 +35,7 @@ function consultarHorario(sender, responseText, parameters) {
                     for (let i = 0; i < sucursal.length; i++) {
                         quickReplyContent.content_type = "text";
                         quickReplyContent.title = sucursal.sucursales[i]['nombre'];
-                        quickReplyContent.payload = `El horario de ${sucursal.sucursales[i]['nombre']}`;
+                        quickReplyContent.payload = sucursal.sucursales[i]['nombre'];
                         quickReplies.push(quickReplyContent);
                     }
                 } else {
@@ -55,7 +55,11 @@ function consultarHorario(sender, responseText, parameters) {
         });
     } else {
         // Cuando el usuario no manda todos los parametros necesarios
-        send.sendTextMessage(sender, responseText);
+        quickReplyContentLocation = [{
+            content_type = "location"
+        }];
+        send.sendQuickReply(sender, reply, quickReplyContentLocation);
+        // send.sendTextMessage(sender, responseText);
     }
 }
 
