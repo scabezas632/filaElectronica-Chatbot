@@ -22,18 +22,15 @@ function obtenerComuna(sender, location) {
             console.error(err);
         }
         let comunaJSON = JSON.parse(body);
-        let termino = false;
         let contador = 0;
-        let comuna2;
-        while (!termino) {
+        while (true) {
             if (comunaJSON['results'][0]['address_components'][contador]['types'][0] === 'administrative_area_level_3') {
                 self.comuna = comunaJSON['results'][0]['address_components'][contador]['long_name'];
-                comuna2 = comunaJSON['results'][0]['address_components'][contador]['long_name'];
-                termino = true;
+                console.log("COMUNA:", self.comuna);
+                break;
             }
             contador++;
         }
-        console.log("COMUNA:", comuna2);
         console.log("COMUNA:", self.comuna);
     });
     console.log("COMUNA:", comuna)
