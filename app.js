@@ -177,7 +177,6 @@ function receivedMessage(event) {
     } else if (messageAttachments) {
         if (messageAttachments[0]['type'] === 'location') {
             const comuna = ubicacion.obtenerComuna(senderID, messageAttachments[0]['payload']['coordinates']);
-            console.log("COMUNA: ", comuna)
             sendToApiAi(senderID, comuna, sessionIds);
         } else {
             handleMessageAttachments(messageAttachments, senderID);
