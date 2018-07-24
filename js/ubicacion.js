@@ -23,10 +23,11 @@ function obtenerComuna(sender, location) {
         let termino = false;
         let contador = 0;
         while (!termino) {
-            if (['results'][0]['address_components'][contador]['types'][0] === 'administrative_area_level_3') {
-                comuna = ['results'][0]['address_components'][contador]['long_name'];
+            if (comuna['results'][0]['address_components'][contador]['types'][0] === 'administrative_area_level_3') {
+                comuna = comuna['results'][0]['address_components'][contador]['long_name'];
                 termino = true;
             }
+            contador++;
         }
         return comuna;
     });
