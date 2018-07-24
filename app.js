@@ -12,6 +12,7 @@ const uuid = require('uuid');
 
 // Necesarios para la conversacion
 const oferta = require('./js/oferta');
+const send = require('./js/send');
 
 
 // Parametros para Messenger API
@@ -156,7 +157,7 @@ function receivedMessage(event) {
 
     if (messageText) {
         // Enviar mensaje a API AI
-        sendToApiAi(senderID, messageText);
+        send.sendToApiAi(senderID, messageText);
     } else if (messageAttachments) {
         handleMessageAttachments(messageAttachments, senderID);
     }
@@ -165,16 +166,16 @@ function receivedMessage(event) {
 
 function handleMessageAttachments(messageAttachments, senderID) {
     // Por ahora, solo responde
-    sendTextMessage(senderID, "Archivo recibido. Procesando...");
+    send.sendTextMessage(senderID, "Archivo recibido. Procesando...");
     // var barcode = getBarcodeFromImage(messageAttachments.payload.url);
-    // sendTextMessage(senderID, "Buscando información de " + barcode);
+    // send.sendTextMessage(senderID, "Buscando información de " + barcode);
 }
 
 function handleQuickReply(senderID, quickReply, messageId) {
     var quickReplyPayload = quickReply.payload;
     console.log("Quick reply para el mensaje %s con payload %s", messageId, quickReplyPayload);
     // Se envia el payload a API AI
-    sendToApiAi(senderID, quickReplyPayload);
+    send.sendToApiAi(senderID, quickReplyPayload);
 }
 
 //https://developers.facebook.com/docs/messenger-platform/webhook-reference/message-echo
@@ -193,14 +194,14 @@ function handleApiAiAction(sender, action, responseText, contexts, parameters) {
             break;
         default:
             // Acción no controlada, se envia mensaje por default 
-            sendTextMessage(sender, responseText);
+            send.sendTextMessage(sender, responseText);
     }
 }
 
 function handleMessage(message, sender) {
     switch (message.type) {
         case 0: //texto
-            sendTextMessage(sender, message.speech);
+            send.sendTextMessage(sender, message.speech);
             break;
         case 2: //quick replies
             let replies = [];
@@ -212,10 +213,10 @@ function handleMessage(message, sender) {
                 }
                 replies.push(reply);
             }
-            sendQuickReply(sender, message.title, replies);
+            send.sendQuickReply(sender, message.title, replies);
             break;
         case 3: //imagen
-            sendImageMessage(sender, message.imageUrl);
+            send.sendImageMessage(sender, message.imageUrl);
             break;
         case 4:
             // custom payload
@@ -227,7 +228,7 @@ function handleMessage(message, sender) {
 
             };
 
-            callSendAPI(messageData);
+            send.callSendAPI(messageData);
 
             break;
     }
@@ -268,7 +269,7 @@ function handleCardMessages(messages, sender) {
         };
         elements.push(element);
     }
-    sendGenericMessage(sender, elements);
+    send.sendGenericMessage(sender, elements);
 }
 
 
@@ -280,7 +281,7 @@ function handleApiAiResponse(sender, response) {
     let contexts = response.result.contexts;
     let parameters = response.result.parameters;
 
-    sendTypingOff(sender);
+    send.sendTypingOff(sender);
 
     if (isDefined(messages) && (messages.length == 1 && messages[0].type != 0 || messages.length > 1)) {
         let timeoutInterval = 1100;
@@ -314,338 +315,20 @@ function handleApiAiResponse(sender, response) {
     } else if (responseText == '' && !isDefined(action)) {
         //API AI no puede evaluar el input
         console.log('Pregunta desconocida: ' + response.result.resolvedQuery);
-        sendTextMessage(sender, "No estoy seguro de lo que me dices. ¿Puedes ser más especifico?");
+        send.sendTextMessage(sender, "No estoy seguro de lo que me dices. ¿Puedes ser más especifico?");
     } else if (isDefined(action)) {
         handleApiAiAction(sender, action, responseText, contexts, parameters);
     } else if (isDefined(responseData) && isDefined(responseData.facebook)) {
         try {
             console.log('Respuesta como formato de mensaje: ' + responseData.facebook);
-            sendTextMessage(sender, responseData.facebook);
+            send.sendTextMessage(sender, responseData.facebook);
         } catch (err) {
-            sendTextMessage(sender, err.message);
+            send.sendTextMessage(sender, err.message);
         }
     } else if (isDefined(responseText)) {
 
-        sendTextMessage(sender, responseText);
+        send.sendTextMessage(sender, responseText);
     }
-}
-
-function sendToApiAi(sender, text) {
-
-    sendTypingOn(sender);
-    let apiaiRequest = apiAiService.textRequest(text, {
-        sessionId: sessionIds.get(sender)
-    });
-
-    apiaiRequest.on('response', (response) => {
-        if (isDefined(response.result)) {
-            handleApiAiResponse(sender, response);
-        }
-    });
-
-    apiaiRequest.on('error', (error) => console.error(error));
-    apiaiRequest.end();
-}
-
-
-
-
-function sendTextMessage(recipientId, text) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: text
-        }
-    }
-    callSendAPI(messageData);
-}
-
-/*
- * Envia una imagen utilizando el Send API.
- *
- */
-function sendImageMessage(recipientId, imageUrl) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "image",
-                payload: {
-                    url: imageUrl
-                }
-            }
-        }
-    };
-
-    callSendAPI(messageData);
-}
-
-/*
- * Envia un GIF utilizando el Send API.
- *
- */
-function sendGifMessage(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "image",
-                payload: {
-                    url: config.SERVER_URL + "/assets/instagram_logo.gif"
-                }
-            }
-        }
-    };
-
-    callSendAPI(messageData);
-}
-
-/*
- * Envia un audio utilizando el Send API.
- *
- */
-function sendAudioMessage(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "audio",
-                payload: {
-                    url: config.SERVER_URL + "/assets/sample.mp3"
-                }
-            }
-        }
-    };
-
-    callSendAPI(messageData);
-}
-
-/*
- * Envia un video utilizando un Send API.
- * example videoName: "/assets/allofus480.mov"
- */
-function sendVideoMessage(recipientId, videoName) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "video",
-                payload: {
-                    url: config.SERVER_URL + videoName
-                }
-            }
-        }
-    };
-
-    callSendAPI(messageData);
-}
-
-/*
- * Envia un video utilizando el Send API.
- * example fileName: fileName"/assets/test.txt"
- */
-function sendFileMessage(recipientId, fileName) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "file",
-                payload: {
-                    url: config.SERVER_URL + fileName
-                }
-            }
-        }
-    };
-
-    callSendAPI(messageData);
-}
-
-
-
-/*
- * Envia un Button Message utilizando el Send API.
- *
- */
-function sendButtonMessage(recipientId, text, buttons) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    template_type: "button",
-                    text: text,
-                    buttons: buttons
-                }
-            }
-        }
-    };
-
-    callSendAPI(messageData);
-}
-
-
-function sendGenericMessage(recipientId, elements) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    template_type: "generic",
-                    elements: elements
-                }
-            }
-        }
-    };
-
-    callSendAPI(messageData);
-}
-
-
-function sendReceiptMessage(recipientId, recipient_name, currency, payment_method,
-    timestamp, elements, address, summary, adjustments) {
-    // Generate a random receipt ID as the API requires a unique ID
-    var receiptId = "order" + Math.floor(Math.random() * 1000);
-
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    template_type: "receipt",
-                    recipient_name: recipient_name,
-                    order_number: receiptId,
-                    currency: currency,
-                    payment_method: payment_method,
-                    timestamp: timestamp,
-                    elements: elements,
-                    address: address,
-                    summary: summary,
-                    adjustments: adjustments
-                }
-            }
-        }
-    };
-
-    callSendAPI(messageData);
-}
-
-/*
- * Envia un mensaje con Quick Reply buttons.
- *
- */
-function sendQuickReply(recipientId, text, replies, metadata) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: text,
-            metadata: isDefined(metadata) ? metadata : '',
-            quick_replies: replies
-        }
-    };
-
-    callSendAPI(messageData);
-}
-
-/*
- * Se le envia al usuario el "Visto"
- *
- */
-function sendReadReceipt(recipientId) {
-
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        sender_action: "mark_seen"
-    };
-
-    callSendAPI(messageData);
-}
-
-/*
- * Se prende indicador de "Esta escribiendo..."
- *
- */
-function sendTypingOn(recipientId) {
-
-
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        sender_action: "typing_on"
-    };
-
-    callSendAPI(messageData);
-}
-
-/*
- * Se apaga indicador de "Esta escribiendo..."
- *
- */
-function sendTypingOff(recipientId) {
-
-
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        sender_action: "typing_off"
-    };
-
-    callSendAPI(messageData);
-}
-
-// TRADUCIR
-
-/*
- * Send a message with the account linking call-to-action
- *
- */
-function sendAccountLinking(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    template_type: "button",
-                    text: "Welcome. Link your account.",
-                    buttons: [{
-                        type: "account_link",
-                        url: config.SERVER_URL + "/authorize"
-                    }]
-                }
-            }
-        }
-    };
-
-    callSendAPI(messageData);
 }
 
 
@@ -666,7 +349,7 @@ function greetUserText(userId) {
                 console.log("Usuario de Facebook: %s %s, %s",
                     user.first_name, user.last_name, user.gender);
 
-                sendTextMessage(userId, "¡Hola " + user.first_name + '!');
+                send.sendTextMessage(userId, "¡Hola " + user.first_name + '!');
             } else {
                 console.log("No se ha podido obtener la información del usuario con id",
                     userId);
@@ -677,39 +360,6 @@ function greetUserText(userId) {
 
     });
 }
-
-/*
- * Call the Send API. The message data goes in the body. If successful, we'll 
- * get the message id in a response 
- *
- */
-function callSendAPI(messageData) {
-    request({
-        uri: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: {
-            access_token: config.FB_PAGE_TOKEN
-        },
-        method: 'POST',
-        json: messageData
-
-    }, function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-            var recipientId = body.recipient_id;
-            var messageId = body.message_id;
-
-            if (messageId) {
-                console.log("Successfully sent message with id %s to recipient %s",
-                    messageId, recipientId);
-            } else {
-                console.log("Successfully called Send API for recipient %s",
-                    recipientId);
-            }
-        } else {
-            console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
-        }
-    });
-}
-
 
 
 /*
@@ -731,7 +381,7 @@ function receivedPostback(event) {
     switch (payload) {
         default:
         //unindentified payload
-            sendTextMessage(senderID, "I'm not sure what you want. Can you be more specific?");
+            send.sendTextMessage(senderID, "I'm not sure what you want. Can you be more specific?");
         break;
 
     }
@@ -831,7 +481,7 @@ function receivedAuthentication(event) {
 
     // When an authentication is received, we'll send a message back to the sender
     // to let them know it was successful.
-    sendTextMessage(senderID, "Authentication successful");
+    send.sendTextMessage(senderID, "Authentication successful");
 }
 
 /*
@@ -880,7 +530,7 @@ function isDefined(obj) {
 function consultarHorario(sender, responseText, parameters) {
     if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
         var request = require('request');
-        sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
+        send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
         request({
             url: 'https://filaelectronica-backend.herokuapp.com/sucursal',
             qs: {
@@ -904,10 +554,10 @@ function consultarHorario(sender, responseText, parameters) {
                 reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
                 console.error(err);
             }
-            sendTextMessage(sender, reply);
+            send.sendTextMessage(sender, reply);
         });
     } else {
-        sendTextMessage(sender, responseText);
+        send.sendTextMessage(sender, responseText);
     }
 }
 
