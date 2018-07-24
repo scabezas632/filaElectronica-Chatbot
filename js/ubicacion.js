@@ -8,6 +8,7 @@ function obtenerComuna(sender, location) {
     const lat = location.lat;
     const long = location.long;
     let comuna;
+    const self = this;
     request({
         method: 'GET',
         url: 'https://maps.googleapis.com/maps/api/geocode/json',
@@ -20,12 +21,12 @@ function obtenerComuna(sender, location) {
             send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
             console.error(err);
         }
-        comuna = JSON.parse(body);
+        let comunaJSON = JSON.parse(body);
         let termino = false;
         let contador = 0;
         while (!termino) {
-            if (comuna['results'][0]['address_components'][contador]['types'][0] === 'administrative_area_level_3') {
-                comuna = comuna['results'][0]['address_components'][contador]['long_name'];
+            if (comunaJSON['results'][0]['address_components'][contador]['types'][0] === 'administrative_area_level_3') {
+                self.comuna = comunaJSON['results'][0]['address_components'][contador]['long_name'];
                 termino = true;
             }
             contador++;
