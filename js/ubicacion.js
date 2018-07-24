@@ -4,11 +4,11 @@ const request = require('request');
 const axios = require('axios');
 const config = require('../config/config');
 const send = require('./send');
+let comuna;
 
 function obtenerComuna(sender, location) {
     const lat = location.lat;
     const long = location.long;
-    let comuna;
     axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
             params: {
                 latlng: lat + ', ' + long,
