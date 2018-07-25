@@ -43,25 +43,6 @@ function obtenerComuna(sender, location) {
         // return comuna;
 }
 
-obtenerComuna(sender, location)
-    .then(resp => {
-        let location = resp.data.results[0];
-        let contador = 0;
-        while (true) {
-            if (location['address_components'][contador]['types'][0] === 'administrative_area_level_3') {
-                comuna = location['address_components'][contador]['long_name'];
-                break;
-            }
-            contador++;
-        }
-        console.log("COMUNA1:", comuna);
-        return comuna;
-    })
-    .catch(err => {
-        send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
-        console.error(err);
-    });
-
 module.exports = {
     obtenerComuna
 }
