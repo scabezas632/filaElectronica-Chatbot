@@ -173,30 +173,10 @@ function receivedMessage(event) {
 
     if (messageText) {
         // Enviar mensaje a API 
-        console.log("MENSAJE QUE SE ENVIA A API AI:", messageText);
         sendToApiAi(senderID, messageText, sessionIds);
     } else if (messageAttachments) {
         if (messageAttachments[0]['type'] === 'location') {
-            let comuna;
-            // OBTENER COMUNA DESDE LA UBICACION ENTREGADA POR EL USUARIO
-            ubicacion.obtenerComuna(senderID, messageAttachments[0]['payload']['coordinates'])
-                .then(resp => {
-                    let location = resp.data.results[0];
-                    let contador = 0;
-                    while (true) {
-                        if (location['address_components'][contador]['types'][0] === 'administrative_area_level_3') {
-                            comuna = location['address_components'][contador]['long_name'];
-                            break;
-                        }
-                        contador++;
-                    }
-                    console.log("MENSAJE QUE SE ENVIA A API AI:", comuna);
-                    sendToApiAi(senderID, comuna, sessionIds);
-                })
-                .catch(err => {
-                    send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
-                    console.error(err);
-                });
+            ubicacion.obtenerComuna(senderID, sessionIds, messageAttachments[0]['payload']['coordinates']);
         } else {
             handleMessageAttachments(messageAttachments, senderID);
         }
