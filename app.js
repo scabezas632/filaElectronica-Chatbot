@@ -172,7 +172,8 @@ function receivedMessage(event) {
 
 
     if (messageText) {
-        // Enviar mensaje a API AI
+        // Enviar mensaje a API 
+        console.log("MENSAJE QUE SE ENVIA A API AI:", messageText);
         sendToApiAi(senderID, messageText, sessionIds);
     } else if (messageAttachments) {
         if (messageAttachments[0]['type'] === 'location') {
@@ -189,7 +190,7 @@ function receivedMessage(event) {
                         }
                         contador++;
                     }
-                    console.log("COMUNA1:", comuna);
+                    console.log("MENSAJE QUE SE ENVIA A API AI:", messageText);
                     sendToApiAi(senderID, comuna, sessionIds);
                 })
                 .catch(err => {
