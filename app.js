@@ -190,7 +190,7 @@ function receivedMessage(event) {
                         }
                         contador++;
                     }
-                    console.log("MENSAJE QUE SE ENVIA A API AI:", messageText);
+                    console.log("MENSAJE QUE SE ENVIA A API AI:", comuna);
                     sendToApiAi(senderID, comuna, sessionIds);
                 })
                 .catch(err => {
