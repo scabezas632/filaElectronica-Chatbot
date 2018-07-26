@@ -2,10 +2,10 @@
 
 // Necesarios para el chatbot
 const uuid = require('uuid');
-const send = require('./js/send');
-const handle = require('./js/handle');
-const ubicacion = require('./js/ubicacion');
-const apiai = require('./js/apiai');
+const send = require('./send');
+const handle = require('./handle');
+const ubicacion = require('./ubicacion');
+const apiai = require('./apiai');
 
 function receivedMessage(event, sessionIds) {
 

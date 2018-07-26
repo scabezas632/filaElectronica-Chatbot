@@ -3,8 +3,8 @@
 // Necesarios para el chatbot
 const apiai = require('apiai');
 const config = require('../config/config');
-const send = require('./js/send');
-const handle = require('./js/handle');
+const send = require('./send');
+const handle = require('./handle');
 
 const apiAiService = apiai(config.API_AI_CLIENT_ACCESS_TOKEN, {
     language: "en",
