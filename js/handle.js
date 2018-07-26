@@ -5,7 +5,6 @@ const send = require('./send');
 const horario = require('./horario');
 const oferta = require('./oferta');
 const apiai = require('./apiai');
-const config = require('../config/config');
 const request = require('request');
 
 function handleApiAiResponse(sender, response) {
