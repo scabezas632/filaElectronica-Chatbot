@@ -34,7 +34,7 @@ function receivedMessage(event, sessionIds) {
         handle.handleEcho(messageId, appId, metadata);
         return;
     } else if (quickReply) {
-        handle.handleQuickReply(senderID, quickReply, messageId);
+        handle.handleQuickReply(senderID, quickReply, messageId, sessionIds);
         return;
     }
 

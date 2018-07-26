@@ -87,7 +87,7 @@ function handleMessageAttachments(messageAttachments, senderID) {
     // send.sendTextMessage(senderID, "Buscando información de " + barcode);
 }
 
-function handleQuickReply(senderID, quickReply, messageId) {
+function handleQuickReply(senderID, quickReply, messageId, sessionIds) {
     var quickReplyPayload = quickReply.payload;
     console.log("Quick reply para el mensaje %s con payload %s", messageId, quickReplyPayload);
     // Se envia el payload a API AI
