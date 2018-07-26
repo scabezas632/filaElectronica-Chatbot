@@ -28,15 +28,11 @@ function consultarHorario(sender, responseText, parameters) {
                     // Llenar Quick Reply
                     for (let i = 0; i < sucursal.length; i++) {
                         let quickReplyContent = {
-                                "content_type": "text",
-                                "title": sucursal.sucursales[i]['nombre'],
-                                "payload": sucursal.sucursales[i]['nombre']
-                            }
-                            // quickReplyContent.content_type = "text";
-                            // quickReplyContent.title = sucursal.sucursales[i]['nombre'];
-                            // quickReplyContent.payload = sucursal.sucursales[i]['nombre'];
+                            "content_type": "text",
+                            "title": sucursal.sucursales[i]['nombre'],
+                            "payload": sucursal.sucursales[i]['nombre']
+                        }
                         quickReplies.push(quickReplyContent);
-                        console.log('SUCURSAL:', sucursal.sucursales[i]['nombre']);
                     }
                 } else {
                     reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`;
