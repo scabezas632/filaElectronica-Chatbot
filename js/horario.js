@@ -4,12 +4,6 @@
 const request = require('request');
 const send = require('./send');
 
-let quickReplyContent = {
-    "content_type": "",
-    "title": "",
-    "payload": ""
-}
-
 function consultarHorario(sender, responseText, parameters) {
     if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
         send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
@@ -33,9 +27,14 @@ function consultarHorario(sender, responseText, parameters) {
                         `¿Cuál es la sucursal que necesitas?`;
                     // Llenar Quick Reply
                     for (let i = 0; i < sucursal.length; i++) {
-                        quickReplyContent.content_type = "text";
-                        quickReplyContent.title = sucursal.sucursales[i]['nombre'];
-                        quickReplyContent.payload = sucursal.sucursales[i]['nombre'];
+                        let quickReplyContent = {
+                                "content_type": "text",
+                                "title": sucursal.sucursales[i]['nombre'],
+                                "payload": sucursal.sucursales[i]['nombre']
+                            }
+                            // quickReplyContent.content_type = "text";
+                            // quickReplyContent.title = sucursal.sucursales[i]['nombre'];
+                            // quickReplyContent.payload = sucursal.sucursales[i]['nombre'];
                         quickReplies.push(quickReplyContent);
                         console.log('SUCURSAL:', sucursal.sucursales[i]['nombre']);
                     }
