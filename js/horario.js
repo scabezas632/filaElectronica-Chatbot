@@ -37,6 +37,7 @@ function consultarHorario(sender, responseText, parameters) {
                         quickReplyContent.title = sucursal.sucursales[i]['nombre'];
                         quickReplyContent.payload = sucursal.sucursales[i]['nombre'];
                         quickReplies.push(quickReplyContent);
+                        console.log('SUCURSAL:', sucursal.sucursales[i]['nombre']);
                     }
                 } else {
                     reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`;
