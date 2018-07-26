@@ -3,6 +3,7 @@
 const axios = require('axios');
 const config = require('../config/config');
 const send = require('./send');
+const apiai = require('./apiai');
 
 function queryGoogleMaps(coords) {
     const lat = coords.lat;
@@ -29,7 +30,7 @@ function obtenerComuna(sender, sessionIds, coords) {
                 }
                 contador++;
             }
-            sendToApiAi(sender, comuna, sessionIds);
+            apiai.sendToApiAi(sender, comuna, sessionIds);
         })
         .catch(err => {
             send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');
