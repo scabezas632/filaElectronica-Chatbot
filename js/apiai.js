@@ -28,6 +28,18 @@ function sendToApiAi(sender, text, sessionIds) {
     apiaiRequest.end();
 }
 
+function isDefined(obj) {
+    if (typeof obj == 'undefined') {
+        return false;
+    }
+
+    if (!obj) {
+        return false;
+    }
+
+    return obj != null;
+}
+
 module.exports = {
     sendToApiAi
 }

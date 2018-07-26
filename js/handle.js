@@ -217,7 +217,6 @@ function isDefined(obj) {
     return obj != null;
 }
 
-
 module.exports = {
     handleApiAiResponse,
     handleApiAiAction,
