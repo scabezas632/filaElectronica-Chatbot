@@ -11,7 +11,7 @@ const quickReplyFunctions = [{
 }, {
     "content_type": "text",
     "title": 'Ver Horario',
-    "payload": 'Ver Horario'
+    "payload": 'Ver Horarios'
 }, {
     "content_type": "text",
     "title": 'Ver ofertas',
