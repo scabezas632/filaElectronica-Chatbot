@@ -38,7 +38,7 @@ function consultarHorario(sender, responseText, parameters) {
                         `${sucursal.sucursales[0]['horario']['semana']}\n` +
                         `${sucursal.sucursales[0]['horario']['domingo']}`
                 } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
-                    reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']},` +
+                    reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']}, ` +
                         `¿Cuál es la sucursal que necesitas?`;
                     // Llenar Quick Reply
                     for (let i = 0; i < sucursal.length; i++) {
@@ -50,8 +50,8 @@ function consultarHorario(sender, responseText, parameters) {
                         quickReplies.push(quickReplyContent);
                     }
                 } else {
-                    reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}.
-                            ¿Hay algo más en lo que pueda ayudarte?`;
+                    reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}. ` +
+                        `¿Hay algo más en lo que pueda ayudarte?`;
                     existenTiendas = false;
                 }
             } else {
@@ -60,7 +60,7 @@ function consultarHorario(sender, responseText, parameters) {
             }
 
             // Comprobar si se envían quickReplys
-            if (quickReplies.length == 0) {
+            if (quickReplies.length == 0 && existenTiendas) {
                 send.sendTextMessage(sender, reply);
             } else if (!existenTiendas) {
                 send.sendQuickReply(sender, reply, quickReplyFunctions);
