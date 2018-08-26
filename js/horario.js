@@ -4,6 +4,20 @@
 const request = require('request');
 const send = require('./send');
 
+const quickReplyFunctions = [{
+    "content_type": "text",
+    "title": 'Pedir Turno',
+    "payload": 'Pedir Turno'
+}, {
+    "content_type": "text",
+    "title": 'Ver Horario',
+    "payload": 'Ver Horario'
+}, {
+    "content_type": "text",
+    "title": 'Ver ofertas',
+    "payload": 'Ver ofertas'
+}]
+
 function consultarHorario(sender, responseText, parameters) {
     if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
         send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
@@ -15,6 +29,7 @@ function consultarHorario(sender, responseText, parameters) {
         }, function(err, resp, body) {
             let reply;
             let quickReplies = []
+            let existenTiendas = true;
 
             if (!err && resp.statusCode == 200) {
                 let sucursal = JSON.parse(body);
@@ -35,7 +50,9 @@ function consultarHorario(sender, responseText, parameters) {
                         quickReplies.push(quickReplyContent);
                     }
                 } else {
-                    reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}`;
+                    reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}.
+                            ¿Hay algo más en lo que pueda ayudarte?`;
+                    existenTiendas = false;
                 }
             } else {
                 reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
@@ -45,6 +62,8 @@ function consultarHorario(sender, responseText, parameters) {
             // Comprobar si se envían quickReplys
             if (quickReplies.length == 0) {
                 send.sendTextMessage(sender, reply);
+            } else if (!existenTiendas) {
+                send.sendQuickReply(sender, reply, quickReplyFunctions);
             } else {
                 send.sendQuickReply(sender, reply, quickReplies);
             }
@@ -55,7 +74,6 @@ function consultarHorario(sender, responseText, parameters) {
             "content_type": "location"
         }];
         send.sendQuickReply(sender, responseText, quickReplyContentLocation);
-        // send.sendTextMessage(sender, responseText);
     }
 }
 

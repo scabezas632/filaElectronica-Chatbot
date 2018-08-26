@@ -9,11 +9,7 @@ const send = require('./send');
 function consultarOfertas(sender, responseText) {
     send.sendTextMessage(sender, 'Ok, dame un momento para consultar las ofertas...');
     request({
-        url: 'https://filaelectronica-backend.herokuapp.com/oferta',
-        // qs: { Parametros que se entregan a API AI
-        //     from: 'blog example', 
-        //     time: +new Date() 
-        // }
+        url: 'https://filaelectronica-backend.herokuapp.com/oferta'
     }, function(err, resp, body) {
         if (!err && resp.statusCode == 200) {
             let oferta = JSON.parse(body);
