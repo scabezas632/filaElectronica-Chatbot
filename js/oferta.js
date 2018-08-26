@@ -11,12 +11,12 @@ const quickReplyFunctions = [{
     "payload": 'Pedir Turno'
 }, {
     "content_type": "text",
-    "title": 'Ver Horario',
-    "payload": 'Ver Horario'
+    "title": 'Dame el horario',
+    "payload": 'Dame el horario'
 }, {
     "content_type": "text",
-    "title": 'Ver ofertas',
-    "payload": 'Ver ofertas'
+    "title": 'Dame las ofertas',
+    "payload": 'Dame las ofertas'
 }]
 
 function consultarOfertas(sender, responseText) {
