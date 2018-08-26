@@ -5,6 +5,19 @@
 const request = require('request');
 const send = require('./send');
 
+const quickReplyFunctions = [{
+    "content_type": "text",
+    "title": 'Pedir Turno',
+    "payload": 'Pedir Turno'
+}, {
+    "content_type": "text",
+    "title": 'Ver Horario',
+    "payload": 'Ver Horario'
+}, {
+    "content_type": "text",
+    "title": 'Ver ofertas',
+    "payload": 'Ver ofertas'
+}]
 
 function consultarOfertas(sender, responseText) {
     send.sendTextMessage(sender, 'Ok, dame un momento para consultar las ofertas...');
@@ -33,10 +46,14 @@ function consultarOfertas(sender, responseText) {
                 if (contador != 0) {
                     send.sendTextMessage(sender, reply);
                 } else {
-                    send.sendTextMessage(sender, 'Disculpa pero no existen ofertas vigentes');
+                    reply = 'Disculpa pero no existen ofertas vigentes' +
+                        '¿Hay algo más en lo que pueda ayudarte?';
+                    send.sendQuickReply(sender, reply, quickReplyFunctions);
                 }
             } else {
-                send.sendTextMessage(sender, 'Disculpa pero no existen ofertas vigentes');
+                reply = 'Disculpa pero no existen ofertas vigentes' +
+                    '¿Hay algo más en lo que pueda ayudarte?';
+                send.sendQuickReply(sender, reply, quickReplyFunctions);
             }
         } else {
             send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar las ofertas');
