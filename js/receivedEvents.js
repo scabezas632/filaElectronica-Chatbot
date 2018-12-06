@@ -14,6 +14,8 @@ function receivedMessage(event, sessionIds) {
     var timeOfMessage = event.timestamp;
     var message = event.message;
 
+    console.log(event);
+
     if (!sessionIds.has(senderID)) {
         sessionIds.set(senderID, uuid.v1());
     }
