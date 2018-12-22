@@ -84,6 +84,8 @@ async function consultarHorario(sender, responseText, parameters) {
 
 
 async function consultarHorarioTiendaEspecifica(sender, responseText, nombreTienda, comuna) {
+    nombreTienda = nombreTienda.replace(/(^|\s)\S/g, l => l.toUpperCase());
+    comuna = comuna.replace(/(^|\s)\S/g, l => l.toUpperCase());
     await send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
     try {
         let resp =  await axios.get('http://' + URL_API + '/sucursal', {
@@ -93,20 +95,20 @@ async function consultarHorarioTiendaEspecifica(sender, responseText, nombreTien
             }
         });
         let reply;
-        let quickReplies = []
-        let existenTiendas = true;
 
         let sucursal = resp.data;
 
+        console.log(sucursal)
+
         // Si existe una tienda con ese nombre
         if (sucursal.length > 0) {
-            reply = `${responseText}\n` +
+            reply = `El horario para la sucursal '${nombreTienda}', en la comuna de ${comuna} es:\n` +
                     `${sucursal.sucursales[0]['horario']['semana']}\n` +
                     `${sucursal.sucursales[0]['horario']['domingo']}`
             send.sendTextMessage(sender, reply);
             return ['closing', undefined];
         } else {
-            reply = `No se encontraron tiendas con el nombre: ${nombre}.`;
+            reply = `No se encontraron tiendas con el nombre: ${nombreTienda}.`;
             send.sendTextMessage(sender, reply);
             return ['closing', undefined];
         }

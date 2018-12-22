@@ -92,31 +92,55 @@ function handleApiAiResponse(sender, recipient, response) {
 
 async function handleApiAiAction(sender, action, responseText, contexts, parameters, userQuestion) {
     try {
+        let data;
         let state;
+        let param;
         switch (action) {
             case "obtener-ofertas":
                 state = await oferta.consultarOfertas(sender, responseText);
                 break;
             case "obtener-horario":
-                state = await horario.consultarHorario(sender, responseText, parameters);
-                console.log('state', state)
-                break;
+                data = await ChatDB.getLastState(sender);
+                state = data.state;
+                param = data.paramsProxMensaje;
+                if (state !== null || state !== undefined) {
+                    if(state.split('_')[1] === 'moreThanOneStore') {
+                        await horario.consultarHorarioTiendaEspecifica(sender, responseText, userQuestion, param);
+                    } else {
+                        state = await horario.consultarHorario(sender, responseText, parameters);
+                    }
+                    break;
+                } else {
+                    state = await horario.consultarHorario(sender, responseText, parameters);
+                    break;
+                }
             default:
                 // Acción no controlada, se consulta por el state del último mensaje
-                let data = await ChatDB.getLastState(sender);
+                data = await ChatDB.getLastState(sender);
                 state = data.state;
-                let param = data.paramsProxMensaje;
+                param = data.paramsProxMensaje;
                 if (state !== null || state !== undefined) {
-                    if(state === 'closing') {
-                        send.sendTextMessage(sender, responseText)
-                        break;
-                    } else if(state.split['_'][0] === 'pedirHorario') {
-                        // CASOS DEL FLUJO PEDIR HORARIO
-                        if(state.split['_'][1] === 'moreThanOneStore') {
-                            await horario.consultarHorarioTiendaEspecifica(sender, responseText, userQuestion, param);
-                        }
-                        break;
+                    switch (state.split('_')[0]) {
+                        case 'closing':
+                            send.sendTextMessage(sender, responseText)
+                            break;
+                        
+                        case 'pedirHorario':
+                            // CASOS DEL FLUJO PEDIR HORARIO
+                            switch (state.split('_')[1]) {
+                                case 'moreThanOneStore':
+                                    await horario.consultarHorarioTiendaEspecifica(sender, responseText, userQuestion, param);
+                                    break;
+                                default:
+                                    send.sendTextMessage(sender, responseText);
+                                    break;
+                            }
+                            break;
+                        default:
+                            send.sendTextMessage(sender, responseText);
+                            break;
                     }
+                    break;
                 } else {
                     send.sendTextMessage(sender, responseText);
                     break;

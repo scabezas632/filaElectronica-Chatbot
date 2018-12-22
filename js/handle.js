@@ -87,11 +87,11 @@ function handleMessageAttachments(messageAttachments, senderID) {
     // send.sendTextMessage(senderID, "Buscando información de " + barcode);
 }
 
-function handleQuickReply(senderID, quickReply, messageId, sessionIds) {
+function handleQuickReply(senderID, recipientID, quickReply, messageId, sessionIds) {
     var quickReplyPayload = quickReply.payload;
     console.log("Quick reply para el mensaje %s con payload %s", messageId, quickReplyPayload);
     // Se envia el payload a API AI
-    apiai.sendToApiAi(senderID, quickReplyPayload, sessionIds);
+    apiai.sendToApiAi(senderID, recipientID, quickReplyPayload, sessionIds);
 }
 
 //https://developers.facebook.com/docs/messenger-platform/webhook-reference/message-echo

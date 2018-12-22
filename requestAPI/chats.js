@@ -50,8 +50,8 @@ async function getLastState(idFacebook) {
         let response =  await axios.get('http://' + URL_API + '/chat/last/' + idFacebook);
             // Se obtiene el ultimo state registrado
             return {
-                state: response.data.chats.state,
-                paramsProxMensaje: response.data.chats.paramsProxMensaje
+                state: response.data.chats[0].state,
+                paramsProxMensaje: response.data.chats[0].paramsProxMensaje
             };
     } catch (error) {
         console.error(error)
