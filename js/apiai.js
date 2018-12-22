@@ -7,12 +7,15 @@ const send = require('./send');
 const horario = require('./horario');
 const oferta = require('./oferta');
 
+// Database
+const ChatDB = require('../requestAPI/chats');
+
 const apiAiService = apiai(config.API_AI_CLIENT_ACCESS_TOKEN, {
     language: "en",
     requestSource: "fb"
 });
 
-function sendToApiAi(sender, text, sessionIds) {
+function sendToApiAi(sender, recipient, text, sessionIds) {
 
     send.sendTypingOn(sender);
     let apiaiRequest = apiAiService.textRequest(text, {
@@ -21,7 +24,7 @@ function sendToApiAi(sender, text, sessionIds) {
 
     apiaiRequest.on('response', (response) => {
         if (isDefined(response.result)) {
-            handleApiAiResponse(sender, response);
+            handleApiAiResponse(sender, recipient, response);
         }
     });
 
@@ -29,13 +32,15 @@ function sendToApiAi(sender, text, sessionIds) {
     apiaiRequest.end();
 }
 
-function handleApiAiResponse(sender, response) {
+function handleApiAiResponse(sender, recipient, response) {
+    let userQuestion = response.result.resolvedQuery;
     let responseText = response.result.fulfillment.speech;
     let responseData = response.result.fulfillment.data;
     let messages = response.result.fulfillment.messages;
     let action = response.result.action;
     let contexts = response.result.contexts;
     let parameters = response.result.parameters;
+    let intentName = response.result.metadata.intentName;
 
     send.sendTypingOff(sender);
 
@@ -72,7 +77,7 @@ function handleApiAiResponse(sender, response) {
         console.log('Pregunta desconocida: ' + response.result.resolvedQuery);
         send.sendTextMessage(sender, "No estoy seguro de lo que me dices. ¿Puedes ser más especifico?");
     } else if (isDefined(action)) {
-        handleApiAiAction(sender, action, responseText, contexts, parameters);
+        handleApiAiAction(sender, action, responseText, contexts, parameters, userQuestion);
     } else if (isDefined(responseData) && isDefined(responseData.facebook)) {
         try {
             console.log('Respuesta como formato de mensaje: ' + responseData.facebook);
@@ -85,17 +90,50 @@ function handleApiAiResponse(sender, response) {
     }
 }
 
-function handleApiAiAction(sender, action, responseText, contexts, parameters) {
-    switch (action) {
-        case "obtener-ofertas":
-            oferta.consultarOfertas(sender, responseText);
-            break;
-        case "obtener-horario":
-            horario.consultarHorario(sender, responseText, parameters);
-            break;
-        default:
-            // Acción no controlada, se envia mensaje por default 
-            send.sendTextMessage(sender, responseText);
+async function handleApiAiAction(sender, action, responseText, contexts, parameters, userQuestion) {
+    try {
+        let state;
+        switch (action) {
+            case "obtener-ofertas":
+                state = await oferta.consultarOfertas(sender, responseText);
+                break;
+            case "obtener-horario":
+                state = await horario.consultarHorario(sender, responseText, parameters);
+                console.log('state', state)
+                break;
+            default:
+                // Acción no controlada, se consulta por el state del último mensaje
+                let data = await ChatDB.getLastState(sender);
+                state = data.state;
+                let param = data.paramsProxMensaje;
+                if (state !== null || state !== undefined) {
+                    if(state === 'closing') {
+                        send.sendTextMessage(sender, responseText)
+                        break;
+                    } else if(state.split['_'][0] === 'pedirHorario') {
+                        // CASOS DEL FLUJO PEDIR HORARIO
+                        if(state.split['_'][1] === 'moreThanOneStore') {
+                            await horario.consultarHorarioTiendaEspecifica(sender, responseText, userQuestion, param);
+                        }
+                        break;
+                    }
+                } else {
+                    send.sendTextMessage(sender, responseText);
+                    break;
+                }            
+        }
+        console.log(state)
+        // Guardar mensaje en la base de datos
+        await ChatDB.sendMessageToDB(sender, action, state, userQuestion, sender);
+        await ChatDB.sendMessageToDB(sender, action, state, responseText, 'FilaElectronica');
+    } catch (error) {
+        console.log(error);
+        let state = ['error', undefined];
+        let reply = 'En estos momentos tengo problemas para responder a tu pregunta.';
+        send.sendTextMessage(sender, reply);
+        // Guardar mensaje en la base de datos
+        await ChatDB.sendMessageToDB(sender, action, state, userQuestion, sender);
+        await ChatDB.sendMessageToDB(sender, action, state, reply, 'FilaElectronica');
     }
 }
 

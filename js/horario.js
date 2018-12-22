@@ -1,7 +1,8 @@
 //========================================
 // HORARIO 
 //========================================
-const request = require('request');
+const axios = require('axios');
+const URL_API = require('../config/config').URL_API;
 const send = require('./send');
 
 const quickReplyFunctions = [{
@@ -18,65 +19,106 @@ const quickReplyFunctions = [{
     "payload": 'Dame las ofertas'
 }]
 
-function consultarHorario(sender, responseText, parameters) {
+async function consultarHorario(sender, responseText, parameters) {
     if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
-        send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
-        request({
-            url: 'https://filaelectronica-backend.herokuapp.com/sucursal',
-            qs: {
-                comuna: parameters['comuna']
-            }
-        }, function(err, resp, body) {
+        await send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
+        try {
+            let resp =  await axios.get('http://' + URL_API + '/sucursal', {
+                params: {
+                    comuna: parameters['comuna']
+                }
+            });
             let reply;
             let quickReplies = []
             let existenTiendas = true;
 
-            if (!err && resp.statusCode == 200) {
-                let sucursal = JSON.parse(body);
-                if (sucursal.hasOwnProperty('sucursales') && sucursal.length == 1) {
-                    reply = `${responseText}\n` +
-                        `${sucursal.sucursales[0]['horario']['semana']}\n` +
-                        `${sucursal.sucursales[0]['horario']['domingo']}`
-                } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
-                    reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']}, ` +
-                        `¿Cuál es la sucursal que necesitas?`;
-                    // Llenar Quick Reply
-                    for (let i = 0; i < sucursal.length; i++) {
-                        let quickReplyContent = {
-                            "content_type": "text",
-                            "title": sucursal.sucursales[i]['nombre'],
-                            "payload": sucursal.sucursales[i]['nombre']
-                        }
-                        quickReplies.push(quickReplyContent);
+            let sucursal = resp.data;
+            if (sucursal.hasOwnProperty('sucursales') && sucursal.length == 1) {
+                reply = `${responseText}\n` +
+                    `${sucursal.sucursales[0]['horario']['semana']}\n` +
+                    `${sucursal.sucursales[0]['horario']['domingo']}`
+            } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
+                reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']}, ` +
+                    `¿Cuál es la sucursal que necesitas?`;
+                // Llenar Quick Reply
+                for (let i = 0; i < sucursal.length; i++) {
+                    let quickReplyContent = {
+                        "content_type": "text",
+                        "title": sucursal.sucursales[i]['nombre'],
+                        "payload": sucursal.sucursales[i]['nombre']
                     }
-                } else {
-                    reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}. ` +
-                        `¿Hay algo más en lo que pueda ayudarte?`;
-                    existenTiendas = false;
+                    quickReplies.push(quickReplyContent);
                 }
             } else {
-                reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
-                console.error(err);
+                reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}. ` +
+                    `¿Hay algo más en lo que pueda ayudarte?`;
+                existenTiendas = false;
             }
 
             // Comprobar si se envían quickReplys
             if (quickReplies.length == 0 && existenTiendas) {
                 send.sendTextMessage(sender, reply);
+                return ['closing', undefined];
             } else if (!existenTiendas) {
                 send.sendQuickReply(sender, reply, quickReplyFunctions);
+                return ['closing', undefined];
             } else {
                 send.sendQuickReply(sender, reply, quickReplies);
+                return ['pedirHorario_moreThanOneStore', parameters['comuna']];
             }
-        });
+
+        } catch (error) {
+            reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
+            console.error(error);
+            send.sendTextMessage(sender, reply);
+        }
     } else {
         // Cuando el usuario no manda todos los parametros necesarios
         const quickReplyContentLocation = [{
             "content_type": "location"
         }];
         send.sendQuickReply(sender, responseText, quickReplyContentLocation);
+        return ['pedirHorario_pedirComuna', undefined]
+    }
+}
+
+
+async function consultarHorarioTiendaEspecifica(sender, responseText, nombreTienda, comuna) {
+    await send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
+    try {
+        let resp =  await axios.get('http://' + URL_API + '/sucursal', {
+            params: {
+                comuna: comuna,
+                nombre: nombreTienda
+            }
+        });
+        let reply;
+        let quickReplies = []
+        let existenTiendas = true;
+
+        let sucursal = resp.data;
+
+        // Si existe una tienda con ese nombre
+        if (sucursal.length > 0) {
+            reply = `${responseText}\n` +
+                    `${sucursal.sucursales[0]['horario']['semana']}\n` +
+                    `${sucursal.sucursales[0]['horario']['domingo']}`
+            send.sendTextMessage(sender, reply);
+            return ['closing', undefined];
+        } else {
+            reply = `No se encontraron tiendas con el nombre: ${nombre}.`;
+            send.sendTextMessage(sender, reply);
+            return ['closing', undefined];
+        }
+
+    } catch (error) {
+        reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
+        console.error(error);
+        send.sendTextMessage(sender, reply);
     }
 }
 
 module.exports = {
-    consultarHorario
+    consultarHorario,
+    consultarHorarioTiendaEspecifica
 }

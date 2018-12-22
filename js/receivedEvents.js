@@ -7,6 +7,9 @@ const handle = require('./handle');
 const ubicacion = require('./ubicacion');
 const apiai = require('./apiai');
 
+// DB Request
+const ChatDB = require('../requestAPI/chats');
+
 function receivedMessage(event, sessionIds) {
 
     var senderID = event.sender.id;
@@ -14,13 +17,13 @@ function receivedMessage(event, sessionIds) {
     var timeOfMessage = event.timestamp;
     var message = event.message;
 
-    console.log(event);
+    //console.log(event);
 
     if (!sessionIds.has(senderID)) {
         sessionIds.set(senderID, uuid.v1());
     }
     //console.log("Received message for user %d and page %d at %d with message:", senderID, recipientID, timeOfMessage);
-    console.log(JSON.stringify(message));
+    //console.log(JSON.stringify(message));
 
     var isEcho = message.is_echo;
     var messageId = message.mid;
@@ -42,11 +45,10 @@ function receivedMessage(event, sessionIds) {
 
 
     if (messageText) {
-        // Enviar mensaje a API 
-        apiai.sendToApiAi(senderID, messageText, sessionIds);
+        apiai.sendToApiAi(senderID, recipientID, messageText, sessionIds);
     } else if (messageAttachments) {
         if (messageAttachments[0]['type'] === 'location') {
-            ubicacion.obtenerComuna(senderID, sessionIds, messageAttachments[0]['payload']['coordinates']);
+            ubicacion.obtenerComuna(senderID, recipientID, sessionIds, messageAttachments[0]['payload']['coordinates']);
         } else {
             handle.handleMessageAttachments(messageAttachments, senderID);
         }

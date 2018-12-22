@@ -17,7 +17,7 @@ function queryGoogleMaps(coords) {
 }
 
 // OBTENER COMUNA DESDE LA UBICACION ENTREGADA POR EL USUARIO
-function obtenerComuna(sender, sessionIds, coords) {
+function obtenerComuna(sender, recipient, sessionIds, coords) {
     let comuna;
     queryGoogleMaps(coords)
         .then(resp => {
@@ -30,7 +30,7 @@ function obtenerComuna(sender, sessionIds, coords) {
                 }
                 contador++;
             }
-            apiai.sendToApiAi(sender, comuna, sessionIds);
+            apiai.sendToApiAi(sender, recipient, comuna, sessionIds);
         })
         .catch(err => {
             send.sendTextMessage(sender, 'Disculpa, pero en estos momentos no es posible revisar los horarios.');

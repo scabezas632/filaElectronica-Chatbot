@@ -19,8 +19,8 @@ const quickReplyFunctions = [{
     "payload": 'Dame las ofertas'
 }]
 
-function consultarOfertas(sender, responseText) {
-    send.sendTextMessage(sender, 'Ok, dame un momento para consultar las ofertas...');
+async function consultarOfertas(sender, responseText) {
+    await send.sendTextMessage(sender, 'Ok, dame un momento para consultar las ofertas...');
     request({
         url: 'https://filaelectronica-backend.herokuapp.com/oferta'
     }, function(err, resp, body) {
