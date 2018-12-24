@@ -6,6 +6,7 @@ const config = require('../config/config');
 const send = require('./send');
 const horario = require('./horario');
 const oferta = require('./oferta');
+const verificarCliente = require('./verificarCliente');
 
 // Database
 const ChatDB = require('../requestAPI/chats');
@@ -92,28 +93,33 @@ function handleApiAiResponse(sender, recipient, response) {
 
 async function handleApiAiAction(sender, action, responseText, contexts, parameters, userQuestion) {
     try {
+        let responseData;
         let data;
         let state;
         let param;
         switch (action) {
             case "obtener-ofertas":
-                state = await oferta.consultarOfertas(sender, responseText);
+            responseData = await oferta.consultarOfertas(sender, responseText);
                 break;
             case "obtener-horario":
                 data = await ChatDB.getLastState(sender);
                 state = data.state;
                 param = data.paramsProxMensaje;
                 if (state !== null || state !== undefined) {
-                    if(state.split('_')[1] === 'moreThanOneStore') {
-                        await horario.consultarHorarioTiendaEspecifica(sender, responseText, userQuestion, param);
-                    } else {
-                        state = await horario.consultarHorario(sender, responseText, parameters);
+                    switch(state.split('_')[1]) {
+                        case 'moreThanOneStore':
+                            responseData = await horario.consultarHorarioTiendaEspecifica(sender, responseText, userQuestion, param);
+                            break;
+                        default:
+                            responseData = await horario.consultarHorario(sender, responseText, parameters);
+                            break;
                     }
-                    break;
                 } else {
-                    state = await horario.consultarHorario(sender, responseText, parameters);
-                    break;
+                    responseData = await horario.consultarHorario(sender, responseText, parameters);
                 }
+                break;
+            case "pedir-turno":
+                responseData = await verificarCliente.verificarUsuario(sender, parameters);
             default:
                 // Acción no controlada, se consulta por el state del último mensaje
                 data = await ChatDB.getLastState(sender);
@@ -124,18 +130,41 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                         case 'closing':
                             send.sendTextMessage(sender, responseText)
                             break;
-                        
                         case 'pedirHorario':
                             // CASOS DEL FLUJO PEDIR HORARIO
                             switch (state.split('_')[1]) {
                                 case 'moreThanOneStore':
-                                    await horario.consultarHorarioTiendaEspecifica(sender, responseText, userQuestion, param);
+                                    responseData = await horario.consultarHorarioTiendaEspecifica(sender, responseText, userQuestion, param);
                                     break;
                                 default:
                                     send.sendTextMessage(sender, responseText);
                                     break;
                             }
                             break;
+                        case 'verificarUsuario':
+                            // CASOS DEL FLUJO VERIFICAR USUARIO
+                            switch (state.split('_')[1]) {                                   
+                                case 'requestRut':
+                                    responseData = await verificarCliente.verificarRut(sender, userQuestion, param);
+                                    break;
+                                case 'registerConfirmation':
+                                    responseData = await verificarCliente.registerUser(sender, userQuestion, param);
+                                    break;
+                                default:
+                                    send.sendTextMessage(sender, responseText);
+                                    break;
+                            }
+                            break;
+                        case 'pedirTurno':
+                            //CASOS DEL FLUJO PARA PEDIR TURNO
+                            switch (state.split('_')[1]) {
+                                case 'verifyApprobe':
+                                    // CONTINUAR CON PEDIR TURNO
+                                    break;
+                                default:
+                                    send.sendTextMessage(sender, responseText);
+                                    break;
+                            }
                         default:
                             send.sendTextMessage(sender, responseText);
                             break;
@@ -146,10 +175,17 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                     break;
                 }            
         }
-        console.log(state)
         // Guardar mensaje en la base de datos
-        await ChatDB.sendMessageToDB(sender, action, state, userQuestion, sender);
-        await ChatDB.sendMessageToDB(sender, action, state, responseText, 'FilaElectronica');
+        console.log('================response data==============');
+        console.log(responseData)
+        await ChatDB.sendMessageToDB(sender, action, responseData, userQuestion, sender);
+        if(responseData[2]) {
+            await ChatDB.sendMessageToDB(sender, action, responseData, responseData[2], 'FilaElectronica');
+        } else if (responseData === undefined || responseData === null){
+            await ChatDB.sendMessageToDB(sender, action, ['error', undefined], responseText, 'FilaElectronica');
+        } else {
+            await ChatDB.sendMessageToDB(sender, action, responseData, responseText, 'FilaElectronica');
+        }
     } catch (error) {
         console.log(error);
         let state = ['error', undefined];

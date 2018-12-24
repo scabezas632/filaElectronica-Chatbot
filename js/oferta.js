@@ -2,7 +2,8 @@
 // OFERTAS 
 //========================================
 
-const request = require('request');
+const axios = require('axios');
+const URL_API = require('../config/config').URL_API;
 const send = require('./send');
 
 const quickReplyFunctions = [{
@@ -19,7 +20,7 @@ const quickReplyFunctions = [{
     "payload": 'Dame las ofertas'
 }]
 
-async function consultarOfertas(sender, responseText) {
+async function consultarOfertas(sender, responseText, parameters) {
     await send.sendTextMessage(sender, 'Ok, dame un momento para consultar las ofertas...');
     request({
         url: 'https://filaelectronica-backend.herokuapp.com/oferta'

@@ -58,13 +58,13 @@ async function consultarHorario(sender, responseText, parameters) {
             // Comprobar si se envían quickReplys
             if (quickReplies.length == 0 && existenTiendas) {
                 send.sendTextMessage(sender, reply);
-                return ['closing', undefined];
+                return ['closing', undefined, reply];
             } else if (!existenTiendas) {
                 send.sendQuickReply(sender, reply, quickReplyFunctions);
-                return ['closing', undefined];
+                return ['closing', undefined, reply];
             } else {
                 send.sendQuickReply(sender, reply, quickReplies);
-                return ['pedirHorario_moreThanOneStore', parameters['comuna']];
+                return ['pedirHorario_moreThanOneStore', parameters['comuna'], reply];
             }
 
         } catch (error) {
@@ -78,7 +78,7 @@ async function consultarHorario(sender, responseText, parameters) {
             "content_type": "location"
         }];
         send.sendQuickReply(sender, responseText, quickReplyContentLocation);
-        return ['pedirHorario_pedirComuna', undefined]
+        return ['pedirHorario_pedirComuna', undefined, reply]
     }
 }
 
@@ -106,11 +106,11 @@ async function consultarHorarioTiendaEspecifica(sender, responseText, nombreTien
                     `${sucursal.sucursales[0]['horario']['semana']}\n` +
                     `${sucursal.sucursales[0]['horario']['domingo']}`
             send.sendTextMessage(sender, reply);
-            return ['closing', undefined];
+            return ['closing', undefined, reply];
         } else {
             reply = `No se encontraron tiendas con el nombre: ${nombreTienda}.`;
             send.sendTextMessage(sender, reply);
-            return ['closing', undefined];
+            return ['closing', undefined, reply];
         }
 
     } catch (error) {

@@ -56,9 +56,6 @@ async function getLastState(idFacebook) {
     } catch (error) {
         console.error(error)
     }
-      axios.get('http://' + URL_API + '/chat/last/' + idFacebook).then(response => {
-          console.log(response);
-      }).catch(error => console.error(error))
 }
 
 module.exports = {

@@ -1,136 +1,130 @@
 //========================================
-// Verificar RUT 
+// HORARIO 
 //========================================
-const request = require('request');
+const axios = require('axios');
+const URL_API = require('../config/config').URL_API;
 const send = require('./send');
 
-function VerificarCliente(sender, responseText, parameters) {
-    if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
-        send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
-        request({
-            url: 'https://filaelectronica-backend.herokuapp.com/sucursal',
-            qs: {
-                comuna: parameters['comuna']
-            }
-        }, function(err, resp, body) {
-            let reply;
-            let quickReplies = []
-            let existenTiendas = true;
+// Utils
+const validaRut = require('../utils/validaRut');
 
-            if (!err && resp.statusCode == 200) {
-                let sucursal = JSON.parse(body);
-                if (sucursal.hasOwnProperty('sucursales') && sucursal.length == 1) {
-                    reply = `${responseText}\n` +
-                        `${sucursal.sucursales[0]['horario']['semana']}\n` +
-                        `${sucursal.sucursales[0]['horario']['domingo']}`
-                } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
-                    reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']}, ` +
-                        `¿Cuál es la sucursal que necesitas?`;
-                    // Llenar Quick Reply
-                    for (let i = 0; i < sucursal.length; i++) {
-                        let quickReplyContent = {
-                            "content_type": "text",
-                            "title": sucursal.sucursales[i]['nombre'],
-                            "payload": sucursal.sucursales[i]['nombre']
-                        }
-                        quickReplies.push(quickReplyContent);
-                    }
-                } else {
-                    reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}. ` +
-                        `¿Hay algo más en lo que pueda ayudarte?`;
-                    existenTiendas = false;
-                }
-            } else {
-                reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
-                console.error(err);
-            }
+// API Request
+const usuarioDB = require('../requestAPI/usuarios');
+const clienteDB = require('../requestAPI/clientes');
 
-            // Comprobar si se envían quickReplys
-            if (quickReplies.length == 0 && existenTiendas) {
-                send.sendTextMessage(sender, reply);
-            } else if (!existenTiendas) {
-                send.sendQuickReply(sender, reply, quickReplyFunctions);
+const quickReplyFunctions = [{
+    "content_type": "text",
+    "title": 'Pedir Turno',
+    "payload": 'Pedir Turno'
+}, {
+    "content_type": "text",
+    "title": 'Dame el horario',
+    "payload": 'Dame el horario'
+}, {
+    "content_type": "text",
+    "title": 'Dame las ofertas',
+    "payload": 'Dame las ofertas'
+}]
+
+const quickReplyConfirmation = [{
+    "content_type": "text",
+    "title": 'Si',
+    "payload": 'Si'
+}, {
+    "content_type": "text",
+    "title": 'No',
+    "payload": 'No'
+}]
+
+async function verificarUsuario(sender, parameters) {
+    try {
+        let response = usuarioDB.verifyUserIsClient(sender);
+        if(response===true) {
+            //
+            let cliente = await clienteDB.fetchClient(sender);
+            usuarioDB.registerUserAsClient(sender, cliente.rut, cliente.email, cliente.feNaci)
+            return ['pedirTurno_verifyApprobe', undefined]
+        } else {
+            //el usuario no es cliente, preguntar rut
+            let reply = 'Antes, necesito saber si eres un cliente registrado. Por favor, escribe tu rut.';
+            send.sendTextMessage(sender, reply);
+            if(parameters['comuna']) {
+                return ['verificarUsuario_requestRut', parameters['comuna'], reply];
             } else {
-                send.sendQuickReply(sender, reply, quickReplies);
+                return ['verificarUsuario_requestRut', undefined, reply];
             }
-        });
-    } else {
-        // Cuando el usuario no manda todos los parametros necesarios
-        const quickReplyContentLocation = [{
-            "content_type": "location"
-        }];
-        send.sendQuickReply(sender, responseText, quickReplyContentLocation);
+        }
+    } catch (error) {
+        reply = 'Disculpa, pero en estos momentos no es posible verificar si eres cliente.';
+        console.error(error);
+        send.sendTextMessage(sender, reply);
+        return ['error', undefined, reply];
     }
 }
 
-function verificarIdFacebook(userId) {
-
-    request({
-        url: 'https://filaelectronica-backend.herokuapp.com/usuario',
-        qs: {
-            idFacebook: userId
-        }
-    }, function(err, resp, body) {
-        let reply;
-        let quickReplies = []
-        let existenTiendas = true;
-
-        if (!err && resp.statusCode == 200) {
-            let usuario = JSON.parse(body);
-            if (sucursal.hasOwnProperty('usuarios') && sucursal.length == 1) {
-                reply = ''
-            } else if (sucursal.hasOwnProperty('usuarios') && sucursal.length == 0) {
-                reply = 'Antes, necesito saber si eres un cliente registrado. Por favor, escribe tu RUT.'
-            }
+async function verificarRut(sender, rut, params) {
+    try {
+        let response = await validaRut.verifyRut(rut);
+        if(response) {
+            // Function para continuar el proceso de pedido de turnos
+            return verificarExistenciaCliente(sender, rut);
         } else {
-            reply = 'Disculpa, pero en estos momentos no es posible reservar un lugar en la fila.';
-            console.error(err);
-        }
-
-        // Comprobar si se envían quickReplys
-        if (quickReplies.length == 0 && existenTiendas) {
+            reply = 'El rut que me enviaste no es válido. Por favor, corrigelo';
             send.sendTextMessage(sender, reply);
-        } else if (!existenTiendas) {
+            return ['verificarUsuario_requestRut', undefined, reply];
+        }
+    } catch(error) {
+        reply = 'Disculpa, pero en estos momentos no es posible verificar el rut.';
+        console.error(error);
+        send.sendTextMessage(sender, reply);
+        return ['error', undefined, reply];
+    }
+}
+
+async function verificarExistenciaCliente(sender, rut, params) {
+    try {
+        let response = await clienteDB.verifyClientExists(rut);
+        if(response) {
+            // Usuario existe, se registra para no volver a preguntar
+
+            reply = 'Ok, lo tendré en cuenta para la próxima vez';
+            send.sendTextMessage(sender, reply);
+            return ['pedirTurno_verifyApprobe', undefined, reply];
+        } else {
+            //Usuario no existe, se pregunta si se desea registrar
+            reply = 'Al parecer no estás registrado como cliente. ¿Deseas registrarte?' +
+                    ' Ten en consideración sólo puedes pedir un lugar en la fila estando registrado.';
+            send.sendQuickReply(sender, reply, quickReplyConfirmation);
+            return ['verificarUsuario_registerConfirmation', undefined, reply];
+        }
+    } catch(error) {
+        reply = 'Disculpa, pero en estos momentos no es posible verificar si eres cliente.';
+        console.error(error);
+        send.sendTextMessage(sender, reply);
+        return ['error', undefined, reply];
+    }
+}
+
+async function registerUser(sender, userQuestion, params) {
+    try {
+        if(userQuestion.uppercase() === 'SI') {
+            //Enviar link de registro
+        } else if(userQuestion.uppercase() === 'NO'){
+            reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
             send.sendQuickReply(sender, reply, quickReplyFunctions);
+            return ['closing', undefined, reply];
         } else {
-            send.sendQuickReply(sender, reply, quickReplies);
+            reply = `Por favor, dime 'Si' o 'No'.`;
+            send.sendQuickReply(sender, reply, quickReplyFunctions);
+            return ['verificarUsuario_registerConfirmation', undefined, reply];
         }
-    });
+    } catch (error) {
 
+    }
 }
-
-function obtenerUsuario(userId) {
-    // Se obtiene la información del usuario
-    request({
-        uri: 'https://graph.facebook.com/v2.7/' + userId,
-        qs: {
-            access_token: config.FB_PAGE_TOKEN
-        }
-
-    }, function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-
-            var user = JSON.parse(body);
-
-            if (user.first_name) {
-                // console.log("Usuario de Facebook: %s %s, %s",
-                //     user.first_name, user.last_name, user.gender);
-            } else {
-                console.log("No se ha podido obtener la información del usuario con id",
-                    userId);
-            }
-        } else {
-            console.error(response.error);
-        }
-
-    });
-}
-
-function verificarRut() {
-
-}
-
 
 module.exports = {
-    consultarHorario
+    verificarUsuario,
+    verificarRut,
+    registerUser
 }
