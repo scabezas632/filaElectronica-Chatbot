@@ -38,13 +38,12 @@ const quickReplyConfirmation = [{
 
 async function verificarUsuario(sender, parameters) {
     try {
-        let response = usuarioDB.verifyUserIsClient(sender);
+        let response = await usuarioDB.verifyUserIsClient(sender);
         if(response===true) {
-            //
             let cliente = await clienteDB.fetchClient(sender);
             usuarioDB.registerUserAsClient(sender, cliente.rut, cliente.email, cliente.feNaci)
             return ['pedirTurno_verifyApprobe', undefined]
-        } else {
+        } else if(response==false) {
             //el usuario no es cliente, preguntar rut
             let reply = 'Antes, necesito saber si eres un cliente registrado. Por favor, escribe tu rut.';
             send.sendTextMessage(sender, reply);
@@ -86,7 +85,7 @@ async function verificarExistenciaCliente(sender, rut, params) {
         let response = await clienteDB.verifyClientExists(rut);
         if(response) {
             // Usuario existe, se registra para no volver a preguntar
-
+            usuarioDB.registerUserAsClient(sender, rut)
             reply = 'Ok, lo tendré en cuenta para la próxima vez';
             send.sendTextMessage(sender, reply);
             return ['pedirTurno_verifyApprobe', undefined, reply];
@@ -107,19 +106,26 @@ async function verificarExistenciaCliente(sender, rut, params) {
 
 async function registerUser(sender, userQuestion, params) {
     try {
-        if(userQuestion.uppercase() === 'SI') {
+        if(userQuestion.toUpperCase() === 'SI') {
             //Enviar link de registro
-        } else if(userQuestion.uppercase() === 'NO'){
+            reply = 'Ok, ingresa al siguiente link y registrate.'
+            send.sendAccountLinking(sender, reply, 'Registrate', 'https://www.puntoscencosud.cl/portal/faces/inscribeme')
+            send.sendQuickReply(sender, 'Cuando termines, vuelve y pideme un turno.', quickReplyFunctions);
+            return ['closing', undefined, reply];
+        } else if(userQuestion.toUpperCase() === 'NO'){
             reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
             send.sendQuickReply(sender, reply, quickReplyFunctions);
             return ['closing', undefined, reply];
         } else {
             reply = `Por favor, dime 'Si' o 'No'.`;
-            send.sendQuickReply(sender, reply, quickReplyFunctions);
+            send.sendQuickReply(sender, reply, quickReplyConfirmation);
             return ['verificarUsuario_registerConfirmation', undefined, reply];
         }
     } catch (error) {
-
+        reply = 'Disculpa, pero en estos momentos no es posible atender a tu respuesta.';
+        console.error(error);
+        send.sendTextMessage(sender, reply);
+        return ['error', undefined, reply];
     }
 }
 

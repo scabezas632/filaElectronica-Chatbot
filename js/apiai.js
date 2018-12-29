@@ -7,6 +7,7 @@ const send = require('./send');
 const horario = require('./horario');
 const oferta = require('./oferta');
 const verificarCliente = require('./verificarCliente');
+const usuarioDB = require('../requestAPI/usuarios');
 
 // Database
 const ChatDB = require('../requestAPI/chats');
@@ -33,7 +34,7 @@ function sendToApiAi(sender, recipient, text, sessionIds) {
     apiaiRequest.end();
 }
 
-function handleApiAiResponse(sender, recipient, response) {
+async function handleApiAiResponse(sender, recipient, response) {
     let userQuestion = response.result.resolvedQuery;
     let responseText = response.result.fulfillment.speech;
     let responseData = response.result.fulfillment.data;
@@ -44,6 +45,8 @@ function handleApiAiResponse(sender, recipient, response) {
     let intentName = response.result.metadata.intentName;
 
     send.sendTypingOff(sender);
+
+    await usuarioDB.verifyUserExist(sender);
 
     if (isDefined(messages) && (messages.length == 1 && messages[0].type != 0 || messages.length > 1)) {
         let timeoutInterval = 1100;
@@ -120,6 +123,7 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                 break;
             case "pedir-turno":
                 responseData = await verificarCliente.verificarUsuario(sender, parameters);
+                break;
             default:
                 // Acción no controlada, se consulta por el state del último mensaje
                 data = await ChatDB.getLastState(sender);
@@ -160,6 +164,7 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                             switch (state.split('_')[1]) {
                                 case 'verifyApprobe':
                                     // CONTINUAR CON PEDIR TURNO
+                                    console.log('PASEEEEEEEEE')
                                     break;
                                 default:
                                     send.sendTextMessage(sender, responseText);
@@ -173,11 +178,9 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                 } else {
                     send.sendTextMessage(sender, responseText);
                     break;
-                }            
+                } 
         }
         // Guardar mensaje en la base de datos
-        console.log('================response data==============');
-        console.log(responseData)
         await ChatDB.sendMessageToDB(sender, action, responseData, userQuestion, sender);
         if(responseData[2]) {
             await ChatDB.sendMessageToDB(sender, action, responseData, responseData[2], 'FilaElectronica');

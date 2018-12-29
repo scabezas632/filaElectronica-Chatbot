@@ -1,17 +1,18 @@
 const axios = require('axios');
 const URL_API = require('../config/config').URL_API;
+const FB_PAGE_TOKEN = require('../config/config').FB_PAGE_TOKEN;
 
 // Verificar si se tiene el registro del rut en el usuario
 // si no, preguntar por el rut.
 // Si el rut pertenece a algún cliente registrado, guardarlo en la tabla de usuario
 // Sino, preguntar si desea registrarse. Si lo desea, se pregunta el correo
 
-async function verifyUserExist(idFacebook, nombre) {
+async function verifyUserExist(idFacebook) {
     try {
         let response =  await axios.get('http://' + URL_API + '/usuario/' + idFacebook);
         // Si existe el usuario
         if (response.data.length===0) {
-            createUser(nombre, idFacebook);
+            await createUser(idFacebook);
             return false;
         }
         return true;
@@ -22,6 +23,7 @@ async function verifyUserExist(idFacebook, nombre) {
 
 async function verifyUserIsClient(idFacebook) {
     try {
+        console.log(idFacebook)
         let response =  await axios.get('http://' + URL_API + '/usuario/' + idFacebook);
         // Si existe el usuario
         if (response.data.length>0) {
@@ -34,26 +36,40 @@ async function verifyUserIsClient(idFacebook) {
     }
 }
 
-async function createUser(nombre, idFacebook){
+async function createUser(idFacebook){
+
+    let userName = await getUserInfo(idFacebook);
+
     let body =  {
-        nombre,
+        nombre: userName,
         idFacebook,
-        estado: false
+        estado: true
     }
 
     try {
-        response = await axios.post('http://' + URL_API + '/usuario/', body);
+        response = await axios.post('http://' + URL_API + '/usuario', body);
         return response.data.ok;
     } catch (error) {
         console.error(error)
     }
 }
 
-async function registerUserAsClient(idFacebook, rut, email, feNaci){
+async function getUserInfo(userId) {
+    try {
+        response = await axios.get('https://graph.facebook.com/v2.7/' + userId,{
+            params: {
+                access_token: FB_PAGE_TOKEN
+            }
+        });
+        return `${response.data.first_name} ${response.data.last_name}`;
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+async function registerUserAsClient(idFacebook, rut){
     let body =  {
-        rut,
-        email,
-        feNaci
+        rut
     }
 
     try {
@@ -68,5 +84,6 @@ module.exports = {
     verifyUserExist,
     verifyUserIsClient,
     createUser,
-    registerUserAsClient
+    registerUserAsClient,
+    getUserInfo
 }

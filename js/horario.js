@@ -78,7 +78,7 @@ async function consultarHorario(sender, responseText, parameters) {
             "content_type": "location"
         }];
         send.sendQuickReply(sender, responseText, quickReplyContentLocation);
-        return ['pedirHorario_pedirComuna', undefined, reply]
+        return ['pedirHorario_pedirComuna', undefined, responseText]
     }
 }
 

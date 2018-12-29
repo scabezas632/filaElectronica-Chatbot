@@ -279,7 +279,7 @@ function sendTypingOff(recipientId) {
  * Send a message with the account linking call-to-action
  *
  */
-function sendAccountLinking(recipientId) {
+function sendAccountLinking(recipientId, text, titleButton, url) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -287,14 +287,18 @@ function sendAccountLinking(recipientId) {
         message: {
             attachment: {
                 type: "template",
-                payload: {
+                payload:{
                     template_type: "button",
-                    text: "Welcome. Link your account.",
-                    buttons: [{
-                        type: "account_link",
-                        url: config.SERVER_URL + "/authorize"
-                    }]
-                }
+                    text,
+                    buttons:[
+                      {
+                        type: "web_url",
+                        url,
+                        title: titleButton,
+                        webview_height_ratio: "full"
+                      }
+                    ]
+                  }
             }
         }
     };
