@@ -33,7 +33,7 @@ async function consultarHorarioTiendaEspecifica(sender, responseText, nombreTien
     comuna = comuna.replace(/(^|\s)\S/g, l => l.toUpperCase());
     await send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
     try {
-        let resp =  await axios.get('http://' + URL_API + '/sucursal', {
+        let resp =  await axios.get(URL_API + '/sucursal', {
             params: {
                 comuna: comuna,
                 nombre: nombreTienda

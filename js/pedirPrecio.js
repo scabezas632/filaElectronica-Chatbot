@@ -25,12 +25,12 @@ async function consultarPrecio(sender, responseText, parameters) {
     if (parameters.hasOwnProperty('number') && parameters['number'] != '') {
         await send.sendTextMessage(sender, 'Ok, dame un momento para consultar los precios...');
         try {
-            let respProducto =  await axios.get('http://' + URL_API + '/producto', {
+            let respProducto =  await axios.get(URL_API + '/producto', {
                 params: {
                     codigoBarra: parameters['number']
                 }
             });
-            let respOferta =  await axios.get('http://' + URL_API + '/oferta', {
+            let respOferta =  await axios.get(URL_API + '/oferta', {
                 params: {
                     producto: respProducto.data.productos[0]._id
                 }

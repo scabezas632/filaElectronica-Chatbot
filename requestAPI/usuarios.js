@@ -9,7 +9,7 @@ const FB_PAGE_TOKEN = require('../config/config').FB_PAGE_TOKEN;
 
 async function verifyUserExist(idFacebook) {
     try {
-        let response =  await axios.get('http://' + URL_API + '/usuario/' + idFacebook);
+        let response =  await axios.get(URL_API + '/usuario/' + idFacebook);
         // Si existe el usuario
         if (response.data.length===0) {
             await createUser(idFacebook);
@@ -24,7 +24,7 @@ async function verifyUserExist(idFacebook) {
 async function verifyUserIsClient(idFacebook) {
     try {
         console.log(idFacebook)
-        let response =  await axios.get('http://' + URL_API + '/usuario/' + idFacebook);
+        let response =  await axios.get(URL_API + '/usuario/' + idFacebook);
         // Si existe el usuario
         if (response.data.length>0) {
             if(response.data.usuario.rut) return true;
@@ -47,7 +47,7 @@ async function createUser(idFacebook){
     }
 
     try {
-        response = await axios.post('http://' + URL_API + '/usuario', body);
+        response = await axios.post(URL_API + '/usuario', body);
         return response.data.ok;
     } catch (error) {
         console.error(error)
@@ -73,7 +73,7 @@ async function registerUserAsClient(idFacebook, rut){
     }
 
     try {
-        response = await axios.put('http://' + URL_API + '/usuario/' + idFacebook, body);
+        response = await axios.put(URL_API + '/usuario/' + idFacebook, body);
         return response.data.ok;
     } catch (error) {
         console.error(error)

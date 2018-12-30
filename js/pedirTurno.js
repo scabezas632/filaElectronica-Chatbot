@@ -40,7 +40,7 @@ const quickReplyConfirmation = [{
 async function verificarComuna(sender, responseText, parameters) {
     if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
         try {
-            let resp =  await axios.get('http://' + URL_API + '/sucursal', {
+            let resp =  await axios.get(URL_API + '/sucursal', {
                 params: {
                     comuna: parameters['comuna']
                 }

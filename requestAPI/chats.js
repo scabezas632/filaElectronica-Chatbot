@@ -16,7 +16,7 @@ async function sendMessageToDB(idFacebook, intent, state, mensaje, usuario){
     }
 
     if(existeChat) {
-        axios.post('http://' + URL_API + '/chat/send', body)
+        axios.post(URL_API + '/chat/send', body)
           .then(function (response) {
             console.log(`${usuario} envió un mensaje al chat ${idFacebook}`);
           })
@@ -24,7 +24,7 @@ async function sendMessageToDB(idFacebook, intent, state, mensaje, usuario){
             console.error(error);
           });
     } else {
-        axios.post('http://' + URL_API + '/chat', body)
+        axios.post(URL_API + '/chat', body)
           .then(function (response) {
             console.log(`${usuario} envió un mensaje al chat ${idFacebook}`);
           })
@@ -36,7 +36,7 @@ async function sendMessageToDB(idFacebook, intent, state, mensaje, usuario){
 
 async function existChat(idFacebook) {
     try {
-      let response =  await axios.get('http://' + URL_API + '/chat/' + idFacebook);
+      let response =  await axios.get(URL_API + '/chat/' + idFacebook);
       // Si existe el chat con idFacebook
       if (response.data.length>0) return true;
       return false;
@@ -47,7 +47,7 @@ async function existChat(idFacebook) {
 
 async function getLastState(idFacebook) {
     try {
-        let response =  await axios.get('http://' + URL_API + '/chat/last/' + idFacebook);
+        let response =  await axios.get(URL_API + '/chat/last/' + idFacebook);
             // Se obtiene el ultimo state registrado
             return {
                 state: response.data.chats[0].state,

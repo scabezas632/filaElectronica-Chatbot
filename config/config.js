@@ -7,5 +7,5 @@ module.exports = {
     FB_APP_SECRET: 'bde185688c61e33d24421cff85f0e32c',
     SERVER_URL: isDev ? "https://14515a69.ngrok.io/" : "https://filaelectronica.herokuapp.com/",
     GMAPS_API_TOKEN: 'AIzaSyCRakNczYQCqEIPwR516793xtmh-8qtj5g',
-    URL_API: isDev ? "127.0.0.1:3000" : "https://filaelectronica-backend.herokuapp.com"
+    URL_API: isDev ? "https://127.0.0.1:3000" : "https://filaelectronica-backend.herokuapp.com"
 };

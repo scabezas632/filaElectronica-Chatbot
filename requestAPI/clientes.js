@@ -8,7 +8,7 @@ const URL_API = require('../config/config').URL_API;
 
 async function verifyClientExists(rut) {
     try {
-        let response =  await axios.get('http://' + URL_API + '/cliente/' + rut);
+        let response =  await axios.get(URL_API + '/cliente/' + rut);
         // Si existe el chat con idFacebook
         if (response.data.length>0) return response.data.clientes;
         return false;
@@ -19,7 +19,7 @@ async function verifyClientExists(rut) {
 
 async function fetchClient(idFacebook) {
     try {
-        let response =  await axios.get('http://' + URL_API + '/cliente', {
+        let response =  await axios.get(URL_API + '/cliente', {
             params:{
                 idFacebook
             }
@@ -41,7 +41,7 @@ async function createClient(nombre, rut, email){
     }
 
     try {
-        let response =  await axios.post('http://' + URL_API + '/cliente/', body);
+        let response =  await axios.post(URL_API + '/cliente/', body);
         // Si existe el chat con idFacebook
         if (response.data.length>0) return true;
         return false;
