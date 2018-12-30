@@ -4,6 +4,14 @@
 const axios = require('axios');
 const URL_API = require('../config/config').URL_API;
 const send = require('./send');
+const consultaSucursal = require('../utils/querySucursal').responderCantidadSucursal;
+
+// Utils
+const validaRut = require('../utils/validaRut');
+
+// API Request
+const usuarioDB = require('../requestAPI/usuarios');
+const clienteDB = require('../requestAPI/clientes');
 
 const quickReplyFunctions = [{
     "content_type": "text",
@@ -19,9 +27,18 @@ const quickReplyFunctions = [{
     "payload": 'Dame las ofertas'
 }]
 
-async function consultarHorario(sender, responseText, parameters) {
+const quickReplyConfirmation = [{
+    "content_type": "text",
+    "title": 'Si',
+    "payload": 'Si'
+}, {
+    "content_type": "text",
+    "title": 'No',
+    "payload": 'No'
+}]
+
+async function verificarComuna(sender, responseText, parameters) {
     if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
-        await send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
         try {
             let resp =  await axios.get('http://' + URL_API + '/sucursal', {
                 params: {
@@ -31,40 +48,31 @@ async function consultarHorario(sender, responseText, parameters) {
             let reply;
             let quickReplies = []
             let existenTiendas = true;
+            let responseConsultaSucursal;
 
             let sucursal = resp.data;
             if (sucursal.hasOwnProperty('sucursales') && sucursal.length == 1) {
-                reply = `${responseText}\n` +
-                    `${sucursal.sucursales[0]['horario']['semana']}\n` +
-                    `${sucursal.sucursales[0]['horario']['domingo']}`
-            } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
-                reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']}, ` +
-                    `¿Cuál es la sucursal que necesitas?`;
-                // Llenar Quick Reply
-                for (let i = 0; i < sucursal.length; i++) {
-                    let quickReplyContent = {
-                        "content_type": "text",
-                        "title": sucursal.sucursales[i]['nombre'],
-                        "payload": sucursal.sucursales[i]['nombre']
-                    }
-                    quickReplies.push(quickReplyContent);
-                }
+                return mostrarTiempoEspera();
             } else {
-                reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}. ` +
-                    `¿Hay algo más en lo que pueda ayudarte?`;
-                existenTiendas = false;
+                responseConsultaSucursal = consultaSucursal(sucursal, parameters['comuna']);
+                reply = responseConsultaSucursal[0];
+                if (responseConsultaSucursal[1]) {
+                    quickReplies = responseConsultaSucursal[1];
+                } else {
+                    existenTiendas = responseConsultaSucursal[1];
+                }
             }
 
             // Comprobar si se envían quickReplys
             if (quickReplies.length == 0 && existenTiendas) {
-                send.sendTextMessage(sender, reply);
-                return ['closing', undefined, reply];
+                send.sendQuickReply(sender, reply, quickReplyConfirmation);
+                return ['pedirTurno_waitConfirmation', undefined, reply];
             } else if (!existenTiendas) {
                 send.sendQuickReply(sender, reply, quickReplyFunctions);
                 return ['closing', undefined, reply];
             } else {
                 send.sendQuickReply(sender, reply, quickReplies);
-                return ['pedirHorario_moreThanOneStore', parameters['comuna'], reply];
+                return ['pedirTurno_moreThanOneStore', parameters['comuna'], reply];
             }
 
         } catch (error) {
@@ -78,49 +86,83 @@ async function consultarHorario(sender, responseText, parameters) {
             "content_type": "location"
         }];
         send.sendQuickReply(sender, responseText, quickReplyContentLocation);
-        return ['pedirHorario_pedirComuna', undefined, reply]
+        return ['pedirTurno_pedirComuna', undefined, responseText]
     }
 }
 
-
-async function consultarHorarioTiendaEspecifica(sender, responseText, nombreTienda, comuna) {
+async function consultarPorTiendaEspecifica(sender, responseText, nombreTienda, comuna) {
     nombreTienda = nombreTienda.replace(/(^|\s)\S/g, l => l.toUpperCase());
     comuna = comuna.replace(/(^|\s)\S/g, l => l.toUpperCase());
-    await send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
+    return mostrarTiempoEspera(sender);
+}
+
+async function mostrarTiempoEspera(d) {
+    console.log('=======================');
+    console.log('aqui esta el problema')
+    // FUNCION PARA PEDIR LA CANTIDAD DE PERSONAS QUE HAY ESPERANDO
+    // (NUMERO DE PERSONAS QUE PIDIERON EL SERVICIO - CONTADOR DE ARDUINO)
+    reply = `Ok, el tiempo de espera estimado es de X minutos. ¿Aceptas esperar?`;
+    send.sendQuickReply(sender, reply, quickReplyConfirmation);
+    return ['pedirTurno_waitConfirmation', undefined, reply];
+}
+
+async function confirmarTurno(sender, userQuestion, params) {
     try {
-        let resp =  await axios.get('http://' + URL_API + '/sucursal', {
-            params: {
-                comuna: comuna,
-                nombre: nombreTienda
-            }
-        });
-        let reply;
-
-        let sucursal = resp.data;
-
-        console.log(sucursal)
-
-        // Si existe una tienda con ese nombre
-        if (sucursal.length > 0) {
-            reply = `El horario para la sucursal '${nombreTienda}', en la comuna de ${comuna} es:\n` +
-                    `${sucursal.sucursales[0]['horario']['semana']}\n` +
-                    `${sucursal.sucursales[0]['horario']['domingo']}`
+        if(userQuestion.toUpperCase() === 'SI') {
+            let cantidadLista = 2;
+            reply = 'Ok, tu turno es el 12, te esperamos en la caja de clientes';
             send.sendTextMessage(sender, reply);
+            //CONDICIONAL, SI HAY MAS DE DOS PERSONAS EN LA LISTA
+            if (cantidadLista>=2){
+                send.sendQuickReply(sender, `¿Deseas que te avise cuando queden ${cantidadLista} personas antes de ti?`, quickReplyConfirmation);
+                return ['pedirTurno_waitConfirmationNotification', undefined, reply];
+            } else {
+                reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
+                send.sendQuickReply(sender, reply, quickReplyFunctions);
+                return ['closing', undefined, reply];
+            }
+        } else if(userQuestion.toUpperCase() === 'NO'){
+            reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
+            send.sendQuickReply(sender, reply, quickReplyFunctions);
             return ['closing', undefined, reply];
         } else {
-            reply = `No se encontraron tiendas con el nombre: ${nombreTienda}.`;
-            send.sendTextMessage(sender, reply);
-            return ['closing', undefined, reply];
+            reply = `Por favor, dime 'Si' o 'No'.`;
+            send.sendQuickReply(sender, reply, quickReplyConfirmation);
+            return ['pedirTurno_waitConfirmation', undefined, reply];
         }
-
     } catch (error) {
-        reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
+        reply = 'Disculpa, pero en estos momentos no es posible atender a tu respuesta.';
         console.error(error);
         send.sendTextMessage(sender, reply);
+        return ['error', undefined, reply];
+    }
+}
+
+async function confirmNotification(sender, userQuestion, params) {
+    try {
+        if(userQuestion.toUpperCase() === 'SI') {
+            reply = 'Ok, te avisaré cuando queden 2 personas. Si necesitas de mi ayuda nuevamente, dimelo.';
+        } else if(userQuestion.toUpperCase() === 'NO'){
+            reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
+        } else {
+            reply = `Por favor, dime 'Si' o 'No'.`;
+            send.sendQuickReply(sender, reply, quickReplyConfirmation);
+            return ['pedirTurno_waitConfirmationNotification', undefined, reply];
+        }
+        send.sendQuickReply(sender, reply, quickReplyConfirmation);
+        return ['closing', undefined, reply];
+    } catch (error) {
+        reply = 'Disculpa, pero en estos momentos no es posible atender a tu respuesta.';
+        console.error(error);
+        send.sendTextMessage(sender, reply);
+        return ['error', undefined, reply];
     }
 }
 
 module.exports = {
-    consultarHorario,
-    consultarHorarioTiendaEspecifica
+    verificarComuna,
+    consultarPorTiendaEspecifica,
+    mostrarTiempoEspera,
+    confirmarTurno,
+    confirmNotification
 }

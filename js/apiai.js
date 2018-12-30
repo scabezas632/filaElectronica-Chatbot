@@ -4,9 +4,11 @@
 const apiai = require('apiai');
 const config = require('../config/config');
 const send = require('./send');
-const horario = require('./horario');
-const oferta = require('./oferta');
+const horario = require('./pedirHorario');
+const oferta = require('./pedirOferta');
 const verificarCliente = require('./verificarCliente');
+const pedirTurno = require('./pedirTurno');
+const pedirPrecio = require('./pedirPrecio');
 const usuarioDB = require('../requestAPI/usuarios');
 
 // Database
@@ -121,8 +123,11 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                     responseData = await horario.consultarHorario(sender, responseText, parameters);
                 }
                 break;
+            case "pedir-precio":
+                responseData = await pedirPrecio.consultarPrecio(sender, responseText, parameters);
+                break;
             case "pedir-turno":
-                responseData = await verificarCliente.verificarUsuario(sender, parameters);
+                responseData = await verificarCliente.verificarUsuario(sender, responseText, parameters);
                 break;
             default:
                 // Acción no controlada, se consulta por el state del último mensaje
@@ -163,13 +168,32 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                             //CASOS DEL FLUJO PARA PEDIR TURNO
                             switch (state.split('_')[1]) {
                                 case 'verifyApprobe':
-                                    // CONTINUAR CON PEDIR TURNO
-                                    console.log('PASEEEEEEEEE')
+                                    responseData = await pedirTurno.verificarComuna(sender, parameters)
+                                    break;
+                                case 'pedirTurno_moreThanOneStore':
+                                    responseData = await pedirTurno.consultarPorTiendaEspecifica(sender, responseText, userQuestion, param);
+                                    break;
+                                case 'pedirTurno_waitConfirmation':
+                                    responseData = await pedirTurno.confirmarTurno(sender, userQuestion, parameters);
+                                    break;
+                                case 'pedirTurno_waitConfirmationNotification':
+                                    responseData = await pedirTurno.confirmNotification(sender, userQuestion, parameters);
                                     break;
                                 default:
                                     send.sendTextMessage(sender, responseText);
                                     break;
                             }
+                        case 'pedirPrecio':
+                            //CASOS DEL FLUJO PARA PEDIR PRECIO
+                            switch (state.split['_'][1]) {
+                                case 'pedirPrecio_pedirCodigoBarra':
+                                    responseData = await pedirPrecio.consultarPrecio(sender, responseText, parameters);
+                                    break;
+                                default:
+                                    send.sendTextMessage(sender, responseText);
+                                    break;
+                            }
+                            break;
                         default:
                             send.sendTextMessage(sender, responseText);
                             break;
@@ -177,7 +201,6 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                     break;
                 } else {
                     send.sendTextMessage(sender, responseText);
-                    break;
                 } 
         }
         // Guardar mensaje en la base de datos
@@ -185,8 +208,9 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
         if(responseData[2]) {
             await ChatDB.sendMessageToDB(sender, action, responseData, responseData[2], 'FilaElectronica');
         } else if (responseData === undefined || responseData === null){
-            await ChatDB.sendMessageToDB(sender, action, ['error', undefined], responseText, 'FilaElectronica');
+            await ChatDB.sendMessageToDB(sender, action, ['error', undefined, '.'], responseText, 'FilaElectronica');
         } else {
+            if(!responseText) responseText = 'NO_DATA_FROM_DIALOGFLOW';
             await ChatDB.sendMessageToDB(sender, action, responseData, responseText, 'FilaElectronica');
         }
     } catch (error) {

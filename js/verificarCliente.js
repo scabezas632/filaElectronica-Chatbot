@@ -4,6 +4,7 @@
 const axios = require('axios');
 const URL_API = require('../config/config').URL_API;
 const send = require('./send');
+const pedirTurno = require('./pedirTurno');
 
 // Utils
 const validaRut = require('../utils/validaRut');
@@ -36,13 +37,13 @@ const quickReplyConfirmation = [{
     "payload": 'No'
 }]
 
-async function verificarUsuario(sender, parameters) {
+async function verificarUsuario(sender, responseText, parameters) {
     try {
         let response = await usuarioDB.verifyUserIsClient(sender);
         if(response===true) {
             let cliente = await clienteDB.fetchClient(sender);
             usuarioDB.registerUserAsClient(sender, cliente.rut, cliente.email, cliente.feNaci)
-            return ['pedirTurno_verifyApprobe', undefined]
+            return await pedirTurno.verificarComuna(sender, responseText, parameters);
         } else if(response==false) {
             //el usuario no es cliente, preguntar rut
             let reply = 'Antes, necesito saber si eres un cliente registrado. Por favor, escribe tu rut.';

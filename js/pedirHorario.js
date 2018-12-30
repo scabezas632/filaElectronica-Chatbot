@@ -4,6 +4,7 @@
 const axios = require('axios');
 const URL_API = require('../config/config').URL_API;
 const send = require('./send');
+const utilSucursal = require('../utils/querySucursal');
 
 const quickReplyFunctions = [{
     "content_type": "text",
@@ -31,28 +32,21 @@ async function consultarHorario(sender, responseText, parameters) {
             let reply;
             let quickReplies = []
             let existenTiendas = true;
+            let responseConsultaSucursal;
 
             let sucursal = resp.data;
             if (sucursal.hasOwnProperty('sucursales') && sucursal.length == 1) {
                 reply = `${responseText}\n` +
                     `${sucursal.sucursales[0]['horario']['semana']}\n` +
                     `${sucursal.sucursales[0]['horario']['domingo']}`
-            } else if (sucursal.hasOwnProperty('sucursales') && sucursal.length > 1) {
-                reply = `Tenemos ${sucursal.length} sucursales en ${parameters['comuna']}, ` +
-                    `¿Cuál es la sucursal que necesitas?`;
-                // Llenar Quick Reply
-                for (let i = 0; i < sucursal.length; i++) {
-                    let quickReplyContent = {
-                        "content_type": "text",
-                        "title": sucursal.sucursales[i]['nombre'],
-                        "payload": sucursal.sucursales[i]['nombre']
-                    }
-                    quickReplies.push(quickReplyContent);
-                }
             } else {
-                reply = `Disculpa pero no tenemos sucursales en ${parameters['comuna']}. ` +
-                    `¿Hay algo más en lo que pueda ayudarte?`;
-                existenTiendas = false;
+                responseConsultaSucursal = utilSucursal.responderCantidadSucursal(sucursal, parameters['comuna']);
+                reply = responseConsultaSucursal[0];
+                if (responseConsultaSucursal[1]) {
+                    quickReplies = responseConsultaSucursal[1];
+                } else {
+                    existenTiendas = responseConsultaSucursal[1];
+                }
             }
 
             // Comprobar si se envían quickReplys
@@ -87,19 +81,10 @@ async function consultarHorarioTiendaEspecifica(sender, responseText, nombreTien
     nombreTienda = nombreTienda.replace(/(^|\s)\S/g, l => l.toUpperCase());
     comuna = comuna.replace(/(^|\s)\S/g, l => l.toUpperCase());
     await send.sendTextMessage(sender, 'Ok, dame un momento para consultar los horarios...');
-    try {
-        let resp =  await axios.get('http://' + URL_API + '/sucursal', {
-            params: {
-                comuna: comuna,
-                nombre: nombreTienda
-            }
-        });
-        let reply;
-
-        let sucursal = resp.data;
-
-        console.log(sucursal)
-
+    
+    let sucursal = await utilSucursal.consultarHorarioTiendaEspecifica(sender, responseText, nombreTienda, comuna);
+    
+    if (sucursal) {
         // Si existe una tienda con ese nombre
         if (sucursal.length > 0) {
             reply = `El horario para la sucursal '${nombreTienda}', en la comuna de ${comuna} es:\n` +
@@ -112,11 +97,6 @@ async function consultarHorarioTiendaEspecifica(sender, responseText, nombreTien
             send.sendTextMessage(sender, reply);
             return ['closing', undefined, reply];
         }
-
-    } catch (error) {
-        reply = 'Disculpa, pero en estos momentos no es posible revisar los horarios.';
-        console.error(error);
-        send.sendTextMessage(sender, reply);
     }
 }
 
