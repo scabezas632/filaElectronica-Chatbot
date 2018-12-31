@@ -5,7 +5,7 @@ module.exports = {
     FB_VERIFY_TOKEN: 'jr3MY%dVP!x|T(M',
     API_AI_CLIENT_ACCESS_TOKEN: 'c8c12099f6014f6aa3a921eb62d9d7c8',
     FB_APP_SECRET: 'bde185688c61e33d24421cff85f0e32c',
-    SERVER_URL: isDev ? "https://14515a69.ngrok.io/" : "https://filaelectronica.herokuapp.com/",
+    SERVER_URL: isDev ? "http://14515a69.ngrok.io/" : "http://filaelectronica.herokuapp.com/",
     GMAPS_API_TOKEN: 'AIzaSyCRakNczYQCqEIPwR516793xtmh-8qtj5g',
     URL_API: isDev ? "http://127.0.0.1:3000" : "http://filaelectronica-backend.herokuapp.com"
 };
