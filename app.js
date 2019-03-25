@@ -9,7 +9,7 @@ const request = require('request');
 const app = express();
 const send = require('./js/send');
 const receivedEvents = require('./js/receivedEvents');
-
+var io = require('socket.io').listen(3001);
 
 // Parametros para Messenger API
 if (!config.FB_PAGE_TOKEN) {
@@ -49,12 +49,12 @@ app.use(bodyParser.json())
 const sessionIds = new Map();
 
 // Index route
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
     res.send('Hola, soy el backend del chat bot Fila Electronica')
 })
 
 // Para la verificacion de Facebook
-app.get('/webhook/', function(req, res) {
+app.get('/webhook/', function (req, res) {
     console.log("request");
     if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === config.FB_VERIFY_TOKEN) {
         res.status(200).send(req.query['hub.challenge']);
@@ -71,19 +71,19 @@ app.get('/webhook/', function(req, res) {
  * https://developers.facebook.com/docs/messenger-platform/product-overview/setup#subscribe_app
  *
  */
-app.post('/webhook/', function(req, res) {
+app.post('/webhook/', function (req, res) {
     var data = req.body;
 
     // Make sure this is a page subscription
     if (data.object == 'page') {
         // Iterate over each entry
         // There may be multiple if batched
-        data.entry.forEach(function(pageEntry) {
+        data.entry.forEach(function (pageEntry) {
             var pageID = pageEntry.id;
             var timeOfEvent = pageEntry.time;
 
             // Iterate over each messaging event
-            pageEntry.messaging.forEach(function(messagingEvent) {
+            pageEntry.messaging.forEach(function (messagingEvent) {
                 if (messagingEvent.optin) {
                     receivedEvents.receivedAuthentication(messagingEvent);
                 } else if (messagingEvent.message) {
@@ -116,7 +116,7 @@ function greetUserText(userId) {
             access_token: config.FB_PAGE_TOKEN
         }
 
-    }, function(error, response, body) {
+    }, function (error, response, body) {
         if (!error && response.statusCode == 200) {
 
             var user = JSON.parse(body);
@@ -165,8 +165,19 @@ function verifyRequestSignature(req, res, buf) {
     }
 }
 
+io.on('connection', function (socket) {
+    console.log('connected:', socket.client.id);
+    // socket.on('serverEvent', function (data) {
+    //     console.log('new message from client:', data);
+    // });
+    socket.on('sendCounter', function (data) {
+        // search all user with 'posicion' diferent of null and notification true
+        // Send message in 
+        console.log('new message from client:', data);
+    });
+});
 
 // Spin up the server
-app.listen(app.get('port'), function() {
+app.listen(app.get('port'), function () {
     console.log('running on port', app.get('port'))
 });
