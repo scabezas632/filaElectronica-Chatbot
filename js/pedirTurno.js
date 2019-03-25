@@ -4,6 +4,7 @@
 const axios = require('axios');
 const URL_API = require('../config/config').URL_API;
 const send = require('./send');
+const turnoUtils = require('../utils/turno');
 const consultaSucursal = require('../utils/querySucursal').responderCantidadSucursal;
 
 // Utils
@@ -40,7 +41,7 @@ const quickReplyConfirmation = [{
 async function verificarComuna(sender, responseText, parameters) {
     if (parameters.hasOwnProperty('comuna') && parameters['comuna'] != '') {
         try {
-            let resp =  await axios.get(URL_API + '/sucursal', {
+            let resp = await axios.get(URL_API + '/sucursal', {
                 params: {
                     comuna: parameters['comuna']
                 }
@@ -52,7 +53,7 @@ async function verificarComuna(sender, responseText, parameters) {
 
             let sucursal = resp.data;
             if (sucursal.hasOwnProperty('sucursales') && sucursal.length == 1) {
-                return mostrarTiempoEspera();
+                return mostrarTiempoEspera(sender);
             } else {
                 responseConsultaSucursal = consultaSucursal(sucursal, parameters['comuna']);
                 reply = responseConsultaSucursal[0];
@@ -96,32 +97,36 @@ async function consultarPorTiendaEspecifica(sender, responseText, nombreTienda, 
     return mostrarTiempoEspera(sender);
 }
 
-async function mostrarTiempoEspera(d) {
+async function mostrarTiempoEspera(sender) {
     console.log('=======================');
     console.log('aqui esta el problema')
+    const turno = await turnoUtils.getNextPosition(sender);
+    console.log(turno)
     // FUNCION PARA PEDIR LA CANTIDAD DE PERSONAS QUE HAY ESPERANDO
     // (NUMERO DE PERSONAS QUE PIDIERON EL SERVICIO - CONTADOR DE ARDUINO)
-    reply = `Ok, el tiempo de espera estimado es de X minutos. ¿Aceptas esperar?`;
+    reply = `Ok, el tiempo de espera estimado es de entre 1 y 2 minutos. ¿Aceptas esperar?`;
     send.sendQuickReply(sender, reply, quickReplyConfirmation);
     return ['pedirTurno_waitConfirmation', undefined, reply];
 }
 
 async function confirmarTurno(sender, userQuestion, params) {
     try {
-        if(userQuestion.toUpperCase() === 'SI') {
-            let cantidadLista = 2;
+        if (userQuestion.toUpperCase() === 'SI') {
+            let cantidadLista = 3;
             reply = 'Ok, tu turno es el 12, te esperamos en la caja de clientes';
-            send.sendTextMessage(sender, reply);
+            await send.sendTextMessage(sender, reply);
             //CONDICIONAL, SI HAY MAS DE DOS PERSONAS EN LA LISTA
-            if (cantidadLista>=2){
-                send.sendQuickReply(sender, `¿Deseas que te avise cuando queden ${cantidadLista} personas antes de ti?`, quickReplyConfirmation);
-                return ['pedirTurno_waitConfirmationNotification', undefined, reply];
-            } else {
-                reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
-                send.sendQuickReply(sender, reply, quickReplyFunctions);
-                return ['closing', undefined, reply];
-            }
-        } else if(userQuestion.toUpperCase() === 'NO'){
+            setTimeout(() => {
+                if (cantidadLista >= 2) {
+                    send.sendQuickReply(sender, `¿Deseas que te avise cuando queden 2 personas antes de ti?`, quickReplyConfirmation);
+                    return ['pedirTurno_waitConfirmationNotification', undefined, reply];
+                } else {
+                    reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
+                    send.sendQuickReply(sender, reply, quickReplyFunctions);
+                    return ['closing', undefined, reply];
+                }
+            }, 500)
+        } else if (userQuestion.toUpperCase() === 'NO') {
             reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
             send.sendQuickReply(sender, reply, quickReplyFunctions);
             return ['closing', undefined, reply];
@@ -140,9 +145,9 @@ async function confirmarTurno(sender, userQuestion, params) {
 
 async function confirmNotification(sender, userQuestion, params) {
     try {
-        if(userQuestion.toUpperCase() === 'SI') {
+        if (userQuestion.toUpperCase() === 'SI') {
             reply = 'Ok, te avisaré cuando queden 2 personas. Si necesitas de mi ayuda nuevamente, dimelo.';
-        } else if(userQuestion.toUpperCase() === 'NO'){
+        } else if (userQuestion.toUpperCase() === 'NO') {
             reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
         } else {
             reply = `Por favor, dime 'Si' o 'No'.`;

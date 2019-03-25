@@ -30,14 +30,17 @@ async function consultarPrecio(sender, responseText, parameters) {
                     codigoBarra: parameters['number']
                 }
             });
-            let respOferta =  await axios.get(URL_API + '/oferta', {
-                params: {
-                    producto: respProducto.data.productos[0]._id
-                }
-            });
             let reply;
             let producto = respProducto.data.productos[0];
-            let oferta = respOferta.data.ofertas[0];
+            let oferta;
+            if(respProducto.data.length !== 0) {
+                let respOferta =  await axios.get(URL_API + '/oferta', {
+                    params: {
+                        producto: respProducto.data.productos[0]._id
+                    }
+                });
+                oferta = respOferta.data.ofertas[0];
+            }
     
             if(producto && !oferta) {
                 reply = `El producto ${producto.nombre} está a ${producto.precio}`;
