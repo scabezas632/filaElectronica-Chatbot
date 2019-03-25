@@ -5,9 +5,8 @@ const send = require('../js/send');
 async function getNextPosition(sender) {
     try {
         let resp = await axios.get(URL_API + '/turno');
-        return resp.data.turno.actualClientes + 1;
+        return resp.data.turnos.actualClientes + 1;
     } catch (error) {
-        console.log(error.response);
         let reply = 'Al parecer hubo un error al intertar reservar, por favor, intenta otra vez'
         send.sendTextMessage(sender, reply);
     }

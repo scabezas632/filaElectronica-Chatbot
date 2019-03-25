@@ -98,13 +98,10 @@ async function consultarPorTiendaEspecifica(sender, responseText, nombreTienda, 
 }
 
 async function mostrarTiempoEspera(sender) {
-    console.log('=======================');
-    console.log('aqui esta el problema')
     const turno = await turnoUtils.getNextPosition(sender);
-    console.log(turno)
     // FUNCION PARA PEDIR LA CANTIDAD DE PERSONAS QUE HAY ESPERANDO
     // (NUMERO DE PERSONAS QUE PIDIERON EL SERVICIO - CONTADOR DE ARDUINO)
-    reply = `Ok, el tiempo de espera estimado es de entre 1 y 2 minutos. ¿Aceptas esperar?`;
+    reply = `Ok, tu número es el ${turno} y el tiempo de espera estimado es de entre 1 y 2 minutos. ¿Aceptas esperar?`;
     send.sendQuickReply(sender, reply, quickReplyConfirmation);
     return ['pedirTurno_waitConfirmation', undefined, reply];
 }
