@@ -104,14 +104,14 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
         let param;
         switch (action) {
             case "obtener-ofertas":
-            responseData = await oferta.consultarOfertas(sender, responseText);
+                responseData = await oferta.consultarOfertas(sender, responseText);
                 break;
             case "obtener-horario":
                 data = await ChatDB.getLastState(sender);
                 state = data.state;
                 param = data.paramsProxMensaje;
                 if (state !== null || state !== undefined) {
-                    switch(state.split('_')[1]) {
+                    switch (state.split('_')[1]) {
                         case 'moreThanOneStore':
                             responseData = await horario.consultarHorarioTiendaEspecifica(sender, responseText, userQuestion, param);
                             break;
@@ -152,7 +152,7 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                             break;
                         case 'verificarUsuario':
                             // CASOS DEL FLUJO VERIFICAR USUARIO
-                            switch (state.split('_')[1]) {                                   
+                            switch (state.split('_')[1]) {
                                 case 'requestRut':
                                     responseData = await verificarCliente.verificarRut(sender, userQuestion, param);
                                     break;
@@ -170,13 +170,13 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                                 case 'verifyApprobe':
                                     responseData = await pedirTurno.verificarComuna(sender, parameters)
                                     break;
-                                case 'pedirTurno_moreThanOneStore':
+                                case 'moreThanOneStore':
                                     responseData = await pedirTurno.consultarPorTiendaEspecifica(sender, responseText, userQuestion, param);
                                     break;
-                                case 'pedirTurno_waitConfirmation':
+                                case 'waitConfirmation':
                                     responseData = await pedirTurno.confirmarTurno(sender, userQuestion, parameters);
                                     break;
-                                case 'pedirTurno_waitConfirmationNotification':
+                                case 'waitConfirmationNotification':
                                     responseData = await pedirTurno.confirmNotification(sender, userQuestion, parameters);
                                     break;
                                 default:
@@ -201,16 +201,16 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                     break;
                 } else {
                     send.sendTextMessage(sender, responseText);
-                } 
+                }
         }
         // Guardar mensaje en la base de datos
-        await ChatDB.sendMessageToDB(sender, action, responseData, userQuestion, sender);
-        if(responseData[2]) {
+        // await ChatDB.sendMessageToDB(sender, action, responseData, userQuestion, sender);
+        if (responseData && responseData[2]) {
             await ChatDB.sendMessageToDB(sender, action, responseData, responseData[2], 'FilaElectronica');
-        } else if (responseData === undefined || responseData === null){
+        } else if (responseData === undefined || responseData === null) {
             await ChatDB.sendMessageToDB(sender, action, ['error', undefined, '.'], responseText, 'FilaElectronica');
         } else {
-            if(!responseText) responseText = 'NO_DATA_FROM_DIALOGFLOW';
+            if (!responseText) responseText = 'NO_DATA_FROM_DIALOGFLOW';
             await ChatDB.sendMessageToDB(sender, action, responseData, responseText, 'FilaElectronica');
         }
     } catch (error) {
