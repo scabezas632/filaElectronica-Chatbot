@@ -125,16 +125,16 @@ async function confirmarTurno(sender, userQuestion, params) {
             turnoUtils.savePositionUser(sender, 'POSITION', positionsData.actualClientes + 1);
             await send.sendTextMessage(sender, reply);
             //CONDICIONAL, SI HAY MAS DE DOS PERSONAS EN LA LISTA
-            setTimeout(() => {
-                if (positionsData.actualCaja >= 2) {
-                    send.sendQuickReply(sender, `¿Deseas que te avise cuando queden 2 personas antes de ti?`, quickReplyConfirmation);
-                    return ['pedirTurno_waitConfirmationNotification', undefined, reply];
-                } else {
-                    reply = 'Si necesitas de mi ayuda nuevamente, dimelo.';
-                    send.sendQuickReply(sender, reply, quickReplyFunctions);
-                    return ['closing', undefined, reply];
-                }
-            }, 500)
+            // setTimeout(() => {
+            if (positionsData.actualCaja >= 2) {
+                send.sendQuickReply(sender, `¿Deseas que te avise cuando queden 2 personas antes de ti?`, quickReplyConfirmation);
+                return ['pedirTurno_waitConfirmationNotification', undefined, reply];
+            } else {
+                reply = 'Si necesitas de mi ayuda nuevamente, dimelo.';
+                send.sendQuickReply(sender, reply, quickReplyFunctions);
+                return ['closing', undefined, reply];
+            }
+            // }, 500)
         } else if (userQuestion.toUpperCase() === 'NO') {
             reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
             send.sendQuickReply(sender, reply, quickReplyFunctions);
@@ -155,16 +155,18 @@ async function confirmarTurno(sender, userQuestion, params) {
 async function confirmNotification(sender, userQuestion, params) {
     try {
         if (userQuestion.toUpperCase() === 'SI') {
+            console.log('paso')
             turnoUtils.savePositionUser(sender, 'NOTIFICATION', true);
             reply = 'Ok, te avisaré cuando queden 2 personas. Si necesitas de mi ayuda nuevamente, dimelo.';
+            send.sendQuickReply(sender, reply, quickReplyFunctions);
         } else if (userQuestion.toUpperCase() === 'NO') {
             reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
+            send.sendQuickReply(sender, reply, quickReplyConfirmation);
         } else {
             reply = `Por favor, dime 'Si' o 'No'.`;
             send.sendQuickReply(sender, reply, quickReplyConfirmation);
             return ['pedirTurno_waitConfirmationNotification', undefined, reply];
         }
-        send.sendQuickReply(sender, reply, quickReplyConfirmation);
         return ['closing', undefined, reply];
     } catch (error) {
         reply = 'Disculpa, pero en estos momentos no es posible atender a tu respuesta.';

@@ -133,10 +133,8 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                 // Acción no controlada, se consulta por el state del último mensaje
                 data = await ChatDB.getLastState(sender);
                 state = data.state;
-                console.log('=========================STATE========================')
-                console.log(state);
                 param = data.paramsProxMensaje;
-                if (state !== null || state !== undefined) {
+                if (state !== null || state !== undefined || state !== 'error') {
                     switch (state.split('_')[0]) {
                         case 'closing':
                             send.sendTextMessage(sender, responseText)
@@ -167,7 +165,6 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                             }
                             break;
                         case 'pedirTurno':
-                            console.log('tigresa del oriente')
                             //CASOS DEL FLUJO PARA PEDIR TURNO
                             switch (state.split('_')[1]) {
                                 case 'verifyApprobe':
@@ -180,15 +177,14 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
                                     responseData = await pedirTurno.confirmarTurno(sender, userQuestion, parameters);
                                     break;
                                 case 'waitConfirmationNotification':
-                                    console.log('ESPERANDO CONFIRMACION DE NOTIFICACION')
                                     responseData = await pedirTurno.confirmNotification(sender, userQuestion, parameters);
                                     break;
                                 default:
                                     send.sendTextMessage(sender, responseText);
                                     break;
                             }
+                            break;
                         case 'pedirPrecio':
-                            console.log('delfin hasta el fin')
                             //CASOS DEL FLUJO PARA PEDIR PRECIO
                             switch (state.split['_'][1]) {
                                 case 'pedirCodigoBarra':
@@ -219,7 +215,6 @@ async function handleApiAiAction(sender, action, responseText, contexts, paramet
             await ChatDB.sendMessageToDB(sender, action, responseData, responseText, 'FilaElectronica');
         }
     } catch (error) {
-        console.log(error);
         let state = ['error', undefined];
         let reply = 'En estos momentos tengo problemas para responder a tu pregunta.';
         send.sendTextMessage(sender, reply);
