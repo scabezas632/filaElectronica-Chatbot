@@ -11,6 +11,8 @@ const send = require('./js/send');
 const receivedEvents = require('./js/receivedEvents');
 var io = require('socket.io').listen(3001);
 
+const turnoUtils = require('./utils/turno');
+
 // Parametros para Messenger API
 if (!config.FB_PAGE_TOKEN) {
     throw new Error('FB_PAGE_TOKEN no esta configurado');
@@ -173,6 +175,7 @@ io.on('connection', function (socket) {
     socket.on('sendCounter', function (data) {
         // search all user with 'posicion' diferent of null and notification true
         // Send message in 
+        turnoUtils.incrementCounterPosition('CAJA', Number(data))
         console.log('new message from client:', data);
     });
 });

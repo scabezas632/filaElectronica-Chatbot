@@ -5,6 +5,9 @@ const axios = require('axios');
 const URL_API = require('../config/config').URL_API;
 const send = require('./send');
 const turnoUtils = require('../utils/turno');
+const {
+    ESTIMATED_TIME
+} = require('../utils/const');
 const consultaSucursal = require('../utils/querySucursal').responderCantidadSucursal;
 
 // Utils
@@ -98,10 +101,17 @@ async function consultarPorTiendaEspecifica(sender, responseText, nombreTienda, 
 }
 
 async function mostrarTiempoEspera(sender) {
-    const turno = await turnoUtils.getNextPosition(sender);
-    // FUNCION PARA PEDIR LA CANTIDAD DE PERSONAS QUE HAY ESPERANDO
-    // (NUMERO DE PERSONAS QUE PIDIERON EL SERVICIO - CONTADOR DE ARDUINO)
-    reply = `Ok, tu número es el ${turno} y el tiempo de espera estimado es de entre 1 y 2 minutos. ¿Aceptas esperar?`;
+    const positionsData = await turnoUtils.getPositionData(sender);
+    const numFila = positionsData.actualClientes - positionsData.actualCaja >= 0 ? positionsData.actualClientes - positionsData.actualCaja : 0;
+    // Obtener el tiempo estimado
+    const estimateTime = ESTIMATED_TIME[numFila] ? ESTIMATED_TIME[numFila].time : ESTIMATED_TIME[10].time;
+
+    let reply = '';
+    if (numFila === 0) {
+        reply = `¡Es tu día de suerte!. La caja está libre para ti. ¿Deseas ir a la caja ahora?`;
+    } else {
+        reply = `Ok, hay ${numFila} ${numFila > 1 ? 'personas' : 'persona'} antes de ti y el tiempo de espera estimado es de ${estimateTime.toFixed(0)} minutos. ¿Aceptas esperar?`;
+    }
     send.sendQuickReply(sender, reply, quickReplyConfirmation);
     return ['pedirTurno_waitConfirmation', undefined, reply];
 }
@@ -109,16 +119,18 @@ async function mostrarTiempoEspera(sender) {
 async function confirmarTurno(sender, userQuestion, params) {
     try {
         if (userQuestion.toUpperCase() === 'SI') {
-            let cantidadLista = 3;
-            reply = 'Ok, tu turno es el 12, te esperamos en la caja de clientes';
+            const positionsData = await turnoUtils.getPositionData(sender);
+            reply = `Ok, tu turno es el ${positionsData.actualClientes + 1}, te esperamos en la caja de clientes`;
+            turnoUtils.incrementCounterPosition('CLIENTE', positionsData.actualClientes + 1);
+            turnoUtils.savePositionUser(sender, 'POSITION', positionsData.actualClientes + 1);
             await send.sendTextMessage(sender, reply);
             //CONDICIONAL, SI HAY MAS DE DOS PERSONAS EN LA LISTA
             setTimeout(() => {
-                if (cantidadLista >= 2) {
+                if (positionsData.actualCaja >= 2) {
                     send.sendQuickReply(sender, `¿Deseas que te avise cuando queden 2 personas antes de ti?`, quickReplyConfirmation);
                     return ['pedirTurno_waitConfirmationNotification', undefined, reply];
                 } else {
-                    reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
+                    reply = 'Si necesitas de mi ayuda nuevamente, dimelo.';
                     send.sendQuickReply(sender, reply, quickReplyFunctions);
                     return ['closing', undefined, reply];
                 }
@@ -143,6 +155,7 @@ async function confirmarTurno(sender, userQuestion, params) {
 async function confirmNotification(sender, userQuestion, params) {
     try {
         if (userQuestion.toUpperCase() === 'SI') {
+            turnoUtils.savePositionUser(sender, 'NOTIFICATION', true);
             reply = 'Ok, te avisaré cuando queden 2 personas. Si necesitas de mi ayuda nuevamente, dimelo.';
         } else if (userQuestion.toUpperCase() === 'NO') {
             reply = 'Ok, gracias por responder. Si necesitas de mi ayuda nuevamente, dimelo.';
